@@ -1,0 +1,6 @@
+[package]
+name = "xxd-rs"
+version = "0.1.0"
+authors = [" <>"]
+
+[dependencies]
