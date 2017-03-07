@@ -1,21 +1,35 @@
 extern crate clap;
-use clap::{Arg, App, SubCommand};
+extern crate error_chain;
 
+use error_chain::*;
+use clap::{Arg, ArgMatches, App, SubCommand};
 use std::io::prelude::*;
+use std::process::exit;
 use std::fs::File;
 use std::fmt::Display;
 
-// add trait which is simmilar to read but returns a slice around the read data
-// -> RFC? is there already one?
-// trait Read
-// fn read(&mut self, buf: &mut [u8]) -> Result<&[u8]>
-fn report_error_to_user<T: Display>(error: T) {
-    println!("Error occured, details: {}", error)
-    // exit ?!
+error_chain! {
+    errors {
+    }
 }
 
 fn main() {
     let matches = create_arg_parser().get_matches();
+    match run(matches) {
+        Ok(_) => exit(0),
+        Err(e) => {
+            report_error(e);
+            exit(1)
+        }
+    }
+}
+
+fn run<'a>(args: ArgMatches<'a>) -> Result<()> {
+    Ok(())
+}
+
+fn report_error<T: Display>(error: T) {
+    println!("Error occured, details: {}", error)
 }
 
 fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {

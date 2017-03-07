@@ -1,7 +1,19 @@
 [package]
 name = "xxd-rs"
 version = "0.1.0"
-authors = [" <>"]
+authors = ["Nicola Coretti <nico.coretti@gmail.com>"]
+
+[lib]
+name = "xxd"
+path = "src/xxd/lib.rs"
+
+[[bin]]
+name = "xxd-rs"
+test = false
+doc = false
 
 [dependencies]
 error-chain = "0.9.0"
+term-painter = "0.2.3"
+clap = "2.16.2"
+
