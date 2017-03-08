@@ -1,2 +1,2 @@
 # xxd-rs
-TBD
+A platform independent rust clone of Juergen Weigert's hexdump utility, xxd.
