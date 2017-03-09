@@ -1,17 +1,18 @@
 extern crate clap;
 extern crate error_chain;
 
-use error_chain::*;
 use clap::{Arg, ArgMatches, App, SubCommand};
 use std::io::prelude::*;
 use std::process::exit;
 use std::fs::File;
 use std::fmt::Display;
 
-error_chain! {
-    errors {
-    }
+mod errors {
+    use error_chain::*;
+    error_chain! {}
 }
+
+use errors::*;
 
 fn main() {
     let matches = create_arg_parser().get_matches();
