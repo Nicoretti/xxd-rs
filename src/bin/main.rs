@@ -2,6 +2,7 @@ extern crate clap;
 extern crate error_chain;
 
 use clap::{Arg, ArgMatches, App, SubCommand};
+use error_chain::*;
 use std::io::prelude::*;
 use std::process::exit;
 use std::fs::File;
@@ -26,11 +27,32 @@ fn main() {
 }
 
 fn run<'a>(args: ArgMatches<'a>) -> Result<()> {
-    Ok(())
+    match args.subcommand_name() {
+        Some("dump") => dump(args.subcommand_matches("dump")),
+        Some("convert") => convert(args.subcommand_matches("convert")),
+        Some("generate") => generate(args.subcommand_matches("generate")),
+        _ => bail!(args.usage()),
+    }
+}
+
+fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
+    command_not_supported()
+}
+
+fn convert<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
+    command_not_supported()
+}
+
+fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
+    command_not_supported()
+}
+
+fn command_not_supported() -> Result<()> {
+    bail!("Command not supported yet!")
 }
 
 fn report_error<T: Display>(error: T) {
-    println!("Error occured, details: {}", error)
+    println!("xxd-rs: {}", error)
 }
 
 fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
