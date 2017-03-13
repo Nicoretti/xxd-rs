@@ -1,5 +1,6 @@
 extern crate clap;
 extern crate error_chain;
+extern crate xxd;
 
 use clap::{Arg, ArgMatches, App, SubCommand};
 use error_chain::*;
