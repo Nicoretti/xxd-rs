@@ -4,14 +4,8 @@ extern crate error_chain;
 extern crate xxd;
 
 use clap::{Arg, ArgMatches, App, SubCommand};
-use error_chain::*;
-use std::io::prelude::*;
 use std::process::exit;
-use std::fs::File;
 use std::fmt::Display;
-use std::isize::*;
-use std::usize::*;
-use std::num::ParseIntError;
 
 mod errors {
     error_chain! {
@@ -26,16 +20,16 @@ use errors::*;
 
 fn main() {
     let matches = create_arg_parser().get_matches();
-    match run(matches) {
+    match run(&matches) {
         Ok(_) => exit(0),
         Err(e) => {
-            report_error(e);
+            report_error(&e);
             exit(1)
         }
     }
 }
 
-fn run<'a>(args: ArgMatches<'a>) -> Result<()> {
+fn run(args: &ArgMatches) -> Result<()> {
     match args.subcommand_name() {
         Some("dump") => dump(args.subcommand_matches("dump")),
         Some("convert") => convert(args.subcommand_matches("convert")),
@@ -78,7 +72,7 @@ fn command_not_supported() -> Result<()> {
     bail!("Command not supported yet!")
 }
 
-fn report_error<T: Display>(error: T) {
+fn report_error<T: Display>(error: &T) {
     println!("xxd-rs: {}", error)
 }
 
