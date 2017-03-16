@@ -1,4 +1,5 @@
 extern crate clap;
+#[macro_use]
 extern crate error_chain;
 extern crate xxd;
 
@@ -8,10 +9,17 @@ use std::io::prelude::*;
 use std::process::exit;
 use std::fs::File;
 use std::fmt::Display;
+use std::isize::*;
+use std::usize::*;
+use std::num::ParseIntError;
 
 mod errors {
-    use error_chain::*;
-    error_chain! {}
+    error_chain! {
+        foreign_links {
+            ParseError(::std::num::ParseIntError);
+            Xxd(::xxd::errors::Error);
+        }
+    }
 }
 
 use errors::*;
@@ -37,7 +45,25 @@ fn run<'a>(args: ArgMatches<'a>) -> Result<()> {
 }
 
 fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
-    command_not_supported()
+    let args = args.ok_or("No arguments available")?;
+    // TODO NiCo: consider using stdin as default instead of reporting an error.
+    let input_file = args.value_of("infile").ok_or("No input file specified")?;
+    let columns = usize::from_str_radix(args.value_of("columns").unwrap_or("8"), 10)?;
+    let format = args.value_of("columns").unwrap_or("hex");
+    let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
+    let length = isize::from_str_radix(args.value_of("length").unwrap_or("-1"), 10)?;
+    // TODO NiCo: add group size as paramter
+    let group_size = 1;
+    println!("in-file: {}, columns: {}, format: {}, seek: {}, length: {}, group size: {}",
+             input_file,
+             columns,
+             format,
+             seek,
+             length,
+             group_size);
+    // Read file chunk by chunk (chunk size = columns * group_size)
+    // create output line for each chunk
+    Ok(())
 }
 
 fn convert<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
