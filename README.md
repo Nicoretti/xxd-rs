@@ -1,5 +1,5 @@
 # xxd-rs
-A platform independent rust clone of Juergen Weigert's hexdump utility, xxd.
+A platform independent reimplementation in rust of Juergen Weigert's hexdump utility, xxd.
 
 ```
 USAGE:
