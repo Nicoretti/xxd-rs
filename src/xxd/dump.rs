@@ -1,5 +1,6 @@
 //! The dump module contains code related for outputing/dumping data.
 use std::fmt::Display;
+use super::errors::*;
 
 /// Enum which provides all possible output value formats supported by the dump module.
 #[derive(Debug)]
@@ -10,7 +11,7 @@ pub enum OutputFormat {
     Binary,
 }
 
-/// The OutputLine struct contains all  information needed to dump/output a single line of data.
+/// The `OutputLine` struct contains all  information needed to dump/output a single line of data.
 #[derive(Debug)]
 pub struct OutputLine<'a> {
     start_address: u32,
@@ -47,11 +48,11 @@ impl<'a> OutputLine<'a> {
         }
     }
 
-    fn write_address(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
-        write!(f, "{:08.X}: ", self.start_address)
+    fn write_address(&self, f: &mut ::fmt::Formatter) -> Result<()> {
+        write!(f, "{:08.X}: ", self.start_address).map_err(|e| e.into())
     }
 
-    fn write_bytes(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
+    fn write_bytes(&self, f: &mut ::fmt::Formatter) -> Result<()> {
         let mut byte_count = 0;
         for b in self.data.iter() {
             byte_count += 1;
@@ -66,16 +67,16 @@ impl<'a> OutputLine<'a> {
         Ok(())
     }
 
-    fn write_formated_byte(&self, f: &mut ::fmt::Formatter, byte: &u8) -> ::fmt::Result {
+    fn write_formated_byte(&self, f: &mut ::fmt::Formatter, byte: &u8) -> Result<()> {
         match self.output_fmt {
-            OutputFormat::Hex => write!(f, "{:02.X}", byte),
-            OutputFormat::Octal => write!(f, "{:02.o}", byte),
-            OutputFormat::Decimal => write!(f, "{:02}", byte),
-            OutputFormat::Binary => write!(f, "{:02b}", byte),
+            OutputFormat::Hex => write!(f, "{:02.X}", byte).map_err(|e| e.into()),
+            OutputFormat::Octal => write!(f, "{:02.o}", byte).map_err(|e| e.into()),
+            OutputFormat::Decimal => write!(f, "{:02}", byte).map_err(|e| e.into()),
+            OutputFormat::Binary => write!(f, "{:02b}", byte).map_err(|e| e.into()),
         }
     }
 
-    fn write_interpretation(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
+    fn write_interpretation(&self, f: &mut ::fmt::Formatter) -> Result<()> {
         write!(f, "   ");
         for b in self.data.iter() {
             match *b {
