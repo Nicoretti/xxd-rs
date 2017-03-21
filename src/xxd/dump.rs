@@ -3,13 +3,66 @@ use std::fmt::Display;
 use super::errors::*;
 
 /// Enum which provides all possible output value formats supported by the dump module.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum OutputFormat {
     Hex,
     Decimal,
     Octal,
     Binary,
 }
+
+pub struct OutputSettings {
+    start_address: u32,
+    show_address: bool,
+    group_size: usize,
+    columns: usize,
+    show_interpretation: bool,
+    output_fmt: OutputFormat,
+}
+
+impl OutputSettings {
+    fn new() -> OutputSettings {
+        OutputSettings {
+            start_address: 0,
+            show_address: true,
+            group_size: 1,
+            columns: 8,
+            show_interpretation: true,
+            output_fmt: OutputFormat::Hex,
+        }
+    }
+
+    pub fn start_address(mut self, address: u32) -> Self {
+        self.start_address = address;
+        self
+    }
+
+    pub fn show_address(mut self, show: bool) -> Self {
+        self.show_address = show;
+        self
+    }
+
+    pub fn group_size(mut self, size: usize) -> Self {
+        self.group_size = size;
+        self
+    }
+
+    pub fn columns(mut self, columns: usize) -> Self {
+        self.columns = columns;
+        self
+    }
+
+    pub fn show_interpretation(mut self, show: bool) -> Self {
+        self.show_interpretation = show;
+        self
+    }
+
+    pub fn format(mut self, fmt: OutputFormat) -> Self {
+        self.output_fmt = fmt;
+        self
+    }
+}
+
 
 /// The `OutputLine` struct contains all  information needed to dump/output a single line of data.
 #[derive(Debug)]
@@ -104,6 +157,37 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
 mod test {
     use super::*;
     use std::fmt::Write;
+
+    #[test]
+    fn output_settings_can_be_constructed() {
+        let output_settings = OutputSettings::new();
+        assert!(true);
+    }
+
+    #[test]
+    fn output_settings_builder() {
+        let format = OutputFormat::Binary;
+        let start_address = 0xFF00AABB;
+        let group_size = 2;
+        let show_address = false;
+        let show_interpretation = false;
+
+        let mut output_settings = OutputSettings::new()
+            .format(format)
+            .start_address(start_address)
+            .group_size(group_size)
+            .show_address(show_address)
+            .show_interpretation(show_interpretation);
+
+        assert_eq!(output_settings.output_fmt, format);
+        assert_eq!(output_settings.start_address, start_address);
+        assert_eq!(output_settings.group_size, group_size);
+        assert_eq!(output_settings.show_address, show_address);
+        assert_eq!(output_settings.show_interpretation, show_interpretation);
+    }
+
+    #[test]
+    fn output_settings_start_address() {}
 
     #[test]
     fn outputline_can_be_constructed() {
