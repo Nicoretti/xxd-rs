@@ -1,5 +1,6 @@
 //! The dump module contains code related for outputing/dumping data.
 use std::fmt::Display;
+use std::convert::From;
 use super::errors::*;
 
 /// Enum which provides all possible output value formats supported by the dump module.
@@ -9,6 +10,18 @@ pub enum OutputFormat {
     Decimal,
     Octal,
     Binary,
+}
+
+impl From<String> for OutputFormat {
+    fn from(format_string: String) -> Self {
+        match format_string.to_lowercase().as_ref() {
+            "hex" => OutputFormat::Hex,
+            "dec" => OutputFormat::Decimal,
+            "oct" => OutputFormat::Octal,
+            "bin" => OutputFormat::Binary,
+            _ => panic!("Invalid output format"),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -172,7 +185,17 @@ mod test {
     }
 
     #[test]
-    fn output_settings_start_address() {}
+    fn output_settings_from_string() {
+        assert_eq!(OutputFormat::Binary, OutputFormat::from("bin".to_string()));
+        assert_eq!(OutputFormat::Hex, OutputFormat::from("hex".to_string()));
+        assert_eq!(OutputFormat::Octal, OutputFormat::from("oct".to_string()));
+        assert_eq!(OutputFormat::Decimal, OutputFormat::from("dec".to_string()));
+
+        assert_eq!(OutputFormat::Binary, OutputFormat::from("Bin".to_string()));
+        assert_eq!(OutputFormat::Hex, OutputFormat::from("hEx".to_string()));
+        assert_eq!(OutputFormat::Octal, OutputFormat::from("ocT".to_string()));
+        assert_eq!(OutputFormat::Decimal, OutputFormat::from("DEC".to_string()));
+    }
 
     #[test]
     fn outputline_can_be_constructed() {
