@@ -35,7 +35,7 @@ pub struct OutputSettings {
 }
 
 impl OutputSettings {
-    fn new() -> OutputSettings {
+    pub fn new() -> OutputSettings {
         OutputSettings {
             start_address: 0,
             show_address: true,
