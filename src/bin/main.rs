@@ -6,12 +6,15 @@ extern crate xxd;
 use clap::{Arg, ArgMatches, App, SubCommand};
 use std::process::exit;
 use std::fmt::Display;
+use std::fs::File;
+use std::io::Read;
 
 mod errors {
     error_chain! {
         foreign_links {
             ParseError(::std::num::ParseIntError);
             Xxd(::xxd::errors::Error);
+            Io(::std::io::Error);
         }
     }
 }
@@ -40,24 +43,48 @@ fn run(args: &ArgMatches) -> Result<()> {
 
 fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     let args = args.ok_or("No arguments available")?;
-    // TODO NiCo: consider using stdin as default instead of reporting an error.
-    let input_file = args.value_of("infile").ok_or("No input file specified")?;
-    let columns = usize::from_str_radix(args.value_of("columns").unwrap_or("8"), 10)?;
-    let format = args.value_of("columns").unwrap_or("hex");
+    let input_file = args.value_of("infile").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
-    let length = isize::from_str_radix(args.value_of("length").unwrap_or("-1"), 10)?;
-    // TODO NiCo: add group size as paramter
-    let group_size = 1;
-    println!("in-file: {}, columns: {}, format: {}, seek: {}, length: {}, group size: {}",
-             input_file,
-             columns,
-             format,
-             seek,
-             length,
-             group_size);
-    // Read file chunk by chunk (chunk size = columns * group_size)
-    // create output line for each chunk
+    let output_settings = create_output_settings(args)?;
+    let reader = create_reader(input_file.to_string())?;
+    let mut data: Vec<u8> = Vec::new();
+    for byte in reader.bytes().skip(seek) {
+        data.push(byte?);
+        if data.len() == output_settings.bytes_per_line() {
+            dump_line(&data, output_settings);
+            data.clear();
+        }
+    }
+    if data.len() > 0 {
+        dump_line(&data, output_settings);
+        data.clear();
+    }
     Ok(())
+}
+
+fn create_output_settings<'a>(args: &ArgMatches<'a>) -> Result<::xxd::dump::OutputSettings> {
+    let columns = usize::from_str_radix(args.value_of("columns").unwrap_or("8"), 10)?;
+    let format = args.value_of("format").unwrap_or("hex");
+    let group_size = usize::from_str_radix(args.value_of("group-size").unwrap_or("1"), 10)?;
+    Ok(::xxd::dump::OutputSettings::new()
+           .format(::xxd::dump::OutputFormat::from(format.to_string()))
+           .group_size(group_size)
+           .columns(columns))
+}
+
+fn dump_line(data: &[u8], output_settings: ::xxd::dump::OutputSettings) {
+    let output_line = ::xxd::dump::OutputLine::new(data).format(output_settings);
+    println!("{}", output_line);
+}
+
+fn create_reader(path: String) -> Result<Box<std::io::Read>> {
+    match path.as_ref() {
+        "stdin" => Ok(Box::new(std::io::stdin())),
+        _ => {
+            let file_reader = std::fs::File::open(path)?;
+            Ok(Box::new(file_reader))
+        }
+    }
 }
 
 fn convert<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
@@ -91,13 +118,6 @@ fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
                  .global(true)
                  .index(2)
                  .help("File to which the output will be written (default: stdout)"))
-        .arg(Arg::with_name("length")
-                 .short("l")
-                 .long("length")
-                 .required(false)
-                 .takes_value(true)
-                 .global(true)
-                 .help("Amount of bytes which shall be read"))
         .arg(Arg::with_name("seek")
                  .short("s")
                  .long("seek")
@@ -116,6 +136,12 @@ fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
                                  .possible_value("bin")
                                  .possible_value("oct")
                                  .help("Specifies the output format for the value (default: hex)"))
+                        .arg(Arg::with_name("group-size")
+                                 .short("g")
+                                 .long("group-size")
+                                 .required(false)
+                                 .takes_value(true)
+                                 .help("Separate  the output of every <bytes> bytes (two hex characters or eight bit-digits each) by a whitespace."))
                         .arg(Arg::with_name("columns")
                                  .short("c")
                                  .long("columns")

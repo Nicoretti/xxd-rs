@@ -24,7 +24,7 @@ impl From<String> for OutputFormat {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct OutputSettings {
     start_address: u32,
     show_address: bool,
@@ -44,6 +44,10 @@ impl OutputSettings {
             show_interpretation: true,
             output_fmt: OutputFormat::Hex,
         }
+    }
+
+    pub fn bytes_per_line(&self) -> usize {
+        self.columns * self.group_size
     }
 
     pub fn start_address(mut self, address: u32) -> Self {
@@ -81,11 +85,11 @@ impl OutputSettings {
 #[derive(Debug)]
 pub struct OutputLine<'a> {
     output_settings: OutputSettings,
-    data: &'a [u8], // TODO NiCo: Add member for data format (output format of data)
+    data: &'a [u8],
 }
 
 impl<'a> OutputLine<'a> {
-    fn new(data: &[u8]) -> OutputLine {
+    pub fn new(data: &[u8]) -> OutputLine {
         OutputLine {
             output_settings: OutputSettings::new(),
             data: data,
@@ -182,6 +186,28 @@ mod test {
         assert_eq!(output_settings.group_size, group_size);
         assert_eq!(output_settings.show_address, show_address);
         assert_eq!(output_settings.show_interpretation, show_interpretation);
+    }
+
+    #[test]
+    fn output_settings_get_bytes_per_line() {
+        {
+            let group_size = 8;
+            let columns = 2;
+            let mut output_settings = OutputSettings::new().columns(columns).group_size(group_size);
+            assert_eq!(group_size * columns, output_settings.bytes_per_line())
+        }
+        {
+            let group_size = 5;
+            let columns = 4;
+            let mut output_settings = OutputSettings::new().columns(columns).group_size(group_size);
+            assert_eq!(group_size * columns, output_settings.bytes_per_line())
+        }
+        {
+            let group_size = 9;
+            let columns = 4;
+            let mut output_settings = OutputSettings::new().columns(columns).group_size(group_size);
+            assert_eq!(group_size * columns, output_settings.bytes_per_line())
+        }
     }
 
     #[test]
