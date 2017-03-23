@@ -1,6 +1,6 @@
 install:
   - ps: iwr https://chocolatey.org/install.ps1 -UseBasicParsing | iex
-  - chhoco install rust
+  - choco install rust
   - rustc -V
   - cargo -V
 
