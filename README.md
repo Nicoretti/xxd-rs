@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/Nicoretti/xxd-rs.svg?branch=master)](https://travis-ci.org/Nicoretti/xxd-rs)
+[![Build status](https://ci.appveyor.com/api/projects/status/nki2w285pjq73jhk/branch/master?svg=true)](https://ci.appveyor.com/project/Nicoretti/xxd-rs/branch/master)
 
 # xxd-rs
 A platform independent reimplementation in rust of Juergen Weigert's hexdump utility, xxd.
