@@ -125,9 +125,9 @@ impl<'a> OutputLine<'a> {
     fn write_formated_byte(&self, f: &mut ::fmt::Formatter, byte: &u8) -> Result<()> {
         match self.output_settings.output_fmt {
             OutputFormat::Hex => write!(f, "{:02.X}", byte).map_err(|e| e.into()),
-            OutputFormat::Octal => write!(f, "{:02.o}", byte).map_err(|e| e.into()),
-            OutputFormat::Decimal => write!(f, "{:02}", byte).map_err(|e| e.into()),
-            OutputFormat::Binary => write!(f, "{:02b}", byte).map_err(|e| e.into()),
+            OutputFormat::Octal => write!(f, "{:03.o}", byte).map_err(|e| e.into()),
+            OutputFormat::Decimal => write!(f, "{:03}", byte).map_err(|e| e.into()),
+            OutputFormat::Binary => write!(f, "{:08b}", byte).map_err(|e| e.into()),
         }
     }
 
@@ -157,8 +157,32 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
 }
 
 mod test {
+    // FIXME NICO: consider different sizes of the output formatats -> eg. oct 377 -> hex: ff ..
+
     use super::*;
     use std::fmt::Write;
+
+    struct TestFixture {
+        data: [u8; 8],
+        small_data: [u8; 5],
+    }
+
+    impl TestFixture {
+        fn new() -> Self {
+            TestFixture {
+                data: [0, 255, 127, 128, 56, 65, 1, 33],
+                small_data: [0, 255, 80, 44, 7],
+            }
+        }
+
+        fn data(&self) -> &[u8] {
+            &self.data
+        }
+
+        fn small_data(&self) -> &[u8] {
+            &self.small_data
+        }
+    }
 
     #[test]
     fn output_settings_can_be_constructed() {
@@ -225,16 +249,29 @@ mod test {
 
     #[test]
     fn outputline_can_be_constructed() {
-        let data = [1, 2, 3];
-        let output_line = OutputLine::new(&data);
+        let fixture = TestFixture::new();
+        let output_line = OutputLine::new(fixture.data());
         assert!(true);
     }
 
     #[test]
     fn default_output_format_for_a_single_line() {
-        let data = [1, 2, 3, 4, 5, 6, 7, 8];
-        let expected_output = "00000000: 01 02 03 04 05 06 07 08    ........";
-        let output_line = OutputLine::new(&data);
+        let fixture = TestFixture::new();
+        let output_line = OutputLine::new(fixture.data());
+        let expected_output = "00000000: 00 FF 7F 80 38 41 01 21    ....8A.!";
+        let mut buffer = String::new();
+        let result = write!(&mut buffer, "{}", output_line);
+        assert_eq!(Ok(()), result);
+        assert_eq!(expected_output, buffer);
+    }
+
+    // FIXME NICO: padding needs to be added if there are insufficient byte for a single line
+    #[ignore]
+    #[test]
+    fn default_output_format_for_a_single_line_with_padding() {
+        let fixture = TestFixture::new();
+        let output_line = OutputLine::new(fixture.small_data());
+        let expected_output = "00000000: 00 FF 50 2C 07             ..P,.";
         let mut buffer = String::new();
         let result = write!(&mut buffer, "{}", output_line);
         assert_eq!(Ok(()), result);
@@ -243,10 +280,10 @@ mod test {
 
     #[test]
     fn octal_output_format_on_a_single_line() {
-        let data = [8, 9, 10, 11, 12, 13, 14, 15];
-        let expected_output = "00000000: 10 11 12 13 14 15 16 17    ........";
+        let fixture = TestFixture::new();
         let output_settings = OutputSettings::new().format(OutputFormat::Octal);
-        let output_line = OutputLine::new(&data).format(output_settings);
+        let output_line = OutputLine::new(fixture.data()).format(output_settings);
+        let expected_output = "00000000: 000 377 177 200 070 101 001 041    ....8A.!";
         let mut buffer = String::new();
         let result = write!(&mut buffer, "{}", output_line);
         assert_eq!(Ok(()), result);
@@ -255,22 +292,12 @@ mod test {
 
     #[test]
     fn binary_output_format_on_a_single_line() {
-        let data = [65, 66, 67, 68, 126, 124, 60, 46];
-        let expected_output = "00000000: 1000001 1000010 1000011 1000100 1111110 1111100 111100 101110    ABCD~|<.";
+        // data: [0, 255, 127, 128, 56, 65, 1, 33],
+        // small_data: [0, 255, 80, 44, 7],
+        let fixture = TestFixture::new();
         let output_settings = OutputSettings::new().format(OutputFormat::Binary);
-        let output_line = OutputLine::new(&data).format(output_settings);
-        let mut buffer = String::new();
-        let result = write!(&mut buffer, "{}", output_line);
-        assert_eq!(Ok(()), result);
-        assert_eq!(expected_output, buffer);
-    }
-
-    #[test]
-    fn interpretation_for_default_settings() {
-        let data = [65, 66, 67, 68, 126, 124, 60, 46];
-        let expected_output = "00000000: 41 42 43 44 7E 7C 3C 2E    ABCD~|<.";
-        let output_settings = OutputSettings::new();
-        let output_line = OutputLine::new(&data).format(output_settings);
+        let output_line = OutputLine::new(fixture.data()).format(output_settings);
+        let expected_output = "00000000: 00000000 11111111 01111111 10000000 00111000 01000001 00000001 00100001    ....8A.!";
         let mut buffer = String::new();
         let result = write!(&mut buffer, "{}", output_line);
         assert_eq!(Ok(()), result);
