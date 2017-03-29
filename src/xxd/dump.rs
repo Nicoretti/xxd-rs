@@ -103,35 +103,50 @@ impl<'a> OutputLine<'a> {
         }
     }
 
-    fn write_address(&self, f: &mut ::fmt::Formatter) -> Result<()> {
-        write!(f, "{:08.X}: ", self.output_settings.start_address).map_err(|e| e.into())
+    fn write_address(&self, f: &mut ::fmt::Formatter) -> Result<usize> {
+        write!(f, "{:08.X}: ", self.output_settings.start_address)?;
+        Ok(10)
     }
 
-    fn write_bytes(&self, f: &mut ::fmt::Formatter) -> Result<()> {
+    fn write_bytes(&self, f: &mut ::fmt::Formatter) -> Result<usize> {
         let mut byte_count = 0;
+        let mut bytes_written = 0;
         for b in self.data.iter() {
             byte_count += 1;
             let is_seperator_necessary = byte_count % self.output_settings.group_size == 0;
             if is_seperator_necessary {
-                self.write_formated_byte(f, b)?;
-                write!(f, " ")?
+                bytes_written += self.write_formated_byte(f, b)?;
+                write!(f, " ")?;
+                bytes_written += 1;
             } else {
-                self.write_formated_byte(f, b)?
+                bytes_written += self.write_formated_byte(f, b)?;
             }
         }
-        Ok(())
+        Ok(bytes_written)
     }
 
-    fn write_formated_byte(&self, f: &mut ::fmt::Formatter, byte: &u8) -> Result<()> {
+    fn write_formated_byte(&self, f: &mut ::fmt::Formatter, byte: &u8) -> Result<usize> {
         match self.output_settings.output_fmt {
-            OutputFormat::Hex => write!(f, "{:02.X}", byte).map_err(|e| e.into()),
-            OutputFormat::Octal => write!(f, "{:03.o}", byte).map_err(|e| e.into()),
-            OutputFormat::Decimal => write!(f, "{:03}", byte).map_err(|e| e.into()),
-            OutputFormat::Binary => write!(f, "{:08b}", byte).map_err(|e| e.into()),
+            OutputFormat::Hex => {
+                write!(f, "{:02.X}", byte)?;
+                Ok(2)
+            }
+            OutputFormat::Octal => {
+                write!(f, "{:03.o}", byte)?;
+                Ok(3)
+            }
+            OutputFormat::Decimal => {
+                write!(f, "{:03}", byte)?;
+                Ok(3)
+            }
+            OutputFormat::Binary => {
+                write!(f, "{:08b}", byte)?;
+                Ok(8)
+            }
         }
     }
 
-    fn write_interpretation(&self, f: &mut ::fmt::Formatter) -> Result<()> {
+    fn write_interpretation(&self, f: &mut ::fmt::Formatter) -> Result<usize> {
         write!(f, "   ");
         for b in self.data.iter() {
             match *b {
@@ -139,16 +154,30 @@ impl<'a> OutputLine<'a> {
                 _ => write!(f, "{}", ".")?,
             }
         }
-        Ok(())
+        Ok(self.data.len())
     }
 }
 
 impl<'a> ::fmt::Display for OutputLine<'a> {
     fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
+        let format_size = |fmt: OutputFormat| match fmt {
+            OutputFormat::Hex => 2,
+            OutputFormat::Octal => 3,
+            OutputFormat::Decimal => 3,
+            OutputFormat::Binary => 8,
+        };
         if self.output_settings.show_address {
             self.write_address(f);
         }
-        self.write_bytes(f);
+        // FIXME NiCo: whats the issues here?!
+        let bytes_written = self.write_bytes(f).unwrap();
+        let expected_length = self.output_settings.columns * self.output_settings.group_size *
+                              format_size(self.output_settings.output_fmt) +
+                              (self.output_settings.columns);
+        let padding = expected_length - bytes_written;
+        for i in 0..padding {
+            write!(f, " ")?;
+        }
         if self.output_settings.show_interpretation {
             self.write_interpretation(f);
         }
@@ -157,7 +186,6 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
 }
 
 mod test {
-    // FIXME NICO: consider different sizes of the output formatats -> eg. oct 377 -> hex: ff ..
 
     use super::*;
     use std::fmt::Write;
@@ -265,8 +293,6 @@ mod test {
         assert_eq!(expected_output, buffer);
     }
 
-    // FIXME NICO: padding needs to be added if there are insufficient byte for a single line
-    #[ignore]
     #[test]
     fn default_output_format_for_a_single_line_with_padding() {
         let fixture = TestFixture::new();
@@ -291,13 +317,36 @@ mod test {
     }
 
     #[test]
+    fn octal_output_format_for_a_single_line_with_padding() {
+        let fixture = TestFixture::new();
+        let output_settings = OutputSettings::new().format(OutputFormat::Octal);
+        let output_line = OutputLine::new(fixture.small_data()).format(output_settings);
+        let expected_output = "00000000: 000 377 120 054 007                ..P,.";
+        let mut buffer = String::new();
+        let result = write!(&mut buffer, "{}", output_line);
+        assert_eq!(Ok(()), result);
+        assert_eq!(expected_output, buffer);
+    }
+
+    #[test]
     fn binary_output_format_on_a_single_line() {
-        // data: [0, 255, 127, 128, 56, 65, 1, 33],
-        // small_data: [0, 255, 80, 44, 7],
         let fixture = TestFixture::new();
         let output_settings = OutputSettings::new().format(OutputFormat::Binary);
         let output_line = OutputLine::new(fixture.data()).format(output_settings);
         let expected_output = "00000000: 00000000 11111111 01111111 10000000 00111000 01000001 00000001 00100001    ....8A.!";
+        let mut buffer = String::new();
+        let result = write!(&mut buffer, "{}", output_line);
+        assert_eq!(Ok(()), result);
+        assert_eq!(expected_output, buffer);
+    }
+
+    #[test]
+    fn binary_output_format_for_a_single_line_with_padding() {
+        // small_data: [0, 255, 80, 44, 7],
+        let fixture = TestFixture::new();
+        let output_settings = OutputSettings::new().format(OutputFormat::Binary);
+        let output_line = OutputLine::new(fixture.small_data()).format(output_settings);
+        let expected_output = "00000000: 00000000 11111111 01010000 00101100 00000111                               ..P,.";
         let mut buffer = String::new();
         let result = write!(&mut buffer, "{}", output_line);
         assert_eq!(Ok(()), result);
