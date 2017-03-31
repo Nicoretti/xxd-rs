@@ -48,15 +48,18 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     let output_settings = create_output_settings(args)?;
     let reader = create_reader(input_file.to_string())?;
     let mut data: Vec<u8> = Vec::new();
+    let mut address = 0;
     for byte in reader.bytes().skip(seek) {
         data.push(byte?);
         if data.len() == output_settings.bytes_per_line() {
-            dump_line(&data, output_settings);
+            dump_line(&data, output_settings.start_address(address));
+            address += data.len();
             data.clear();
         }
     }
     if data.len() > 0 {
-        dump_line(&data, output_settings);
+        dump_line(&data, output_settings.start_address(address));
+        address += data.len();
         data.clear();
     }
     Ok(())
