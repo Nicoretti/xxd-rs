@@ -26,7 +26,7 @@ impl From<String> for OutputFormat {
 
 #[derive(Debug, Clone, Copy)]
 pub struct OutputSettings {
-    start_address: u32,
+    start_address: usize,
     show_address: bool,
     group_size: usize,
     columns: usize,
@@ -50,7 +50,7 @@ impl OutputSettings {
         self.columns * self.group_size
     }
 
-    pub fn start_address(mut self, address: u32) -> Self {
+    pub fn start_address(mut self, address: usize) -> Self {
         self.start_address = address;
         self
     }
