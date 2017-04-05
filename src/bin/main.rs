@@ -45,11 +45,23 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     let args = args.ok_or("No arguments available")?;
     let input_file = args.value_of("infile").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
+    let length = args.value_of("length");
     let output_settings = create_output_settings(args)?;
     let reader = create_reader(input_file.to_string())?;
+    match length {
+        None => dump_iterator(Box::new(reader.bytes().skip(seek)), output_settings),
+        Some(n) => {
+            dump_iterator(Box::new(reader.bytes().skip(seek).take(usize::from_str_radix(n, 10)?)),
+                          output_settings)
+        }
+    };
+    Ok(())
+}
+
+fn dump_iterator<I: Iterator<Item = std::result::Result<u8, std::io::Error>>>(it: Box<I>, output_settings: ::xxd::dump::OutputSettings) -> Result<()>{
     let mut data: Vec<u8> = Vec::new();
     let mut address = 0;
-    for byte in reader.bytes().skip(seek) {
+    for byte in *it {
         data.push(byte?);
         if data.len() == output_settings.bytes_per_line() {
             dump_line(&data, output_settings.start_address(address));
@@ -128,6 +140,13 @@ fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
                  .takes_value(true)
                  .global(true)
                  .help("Offset in the file where to start reading"))
+        .arg(Arg::with_name("length")
+                 .short("l")
+                 .long("length")
+                 .required(false)
+                 .takes_value(true)
+                 .global(true)
+                 .help("Amount of bytes which shall be read"))
         .subcommand(SubCommand::with_name("dump")
                         .about("Dumps an input file in the appropriate output format")
                         .arg(Arg::with_name("format")
