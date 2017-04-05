@@ -342,7 +342,6 @@ mod test {
 
     #[test]
     fn binary_output_format_for_a_single_line_with_padding() {
-        // small_data: [0, 255, 80, 44, 7],
         let fixture = TestFixture::new();
         let output_settings = OutputSettings::new().format(OutputFormat::Binary);
         let output_line = OutputLine::new(fixture.small_data()).format(output_settings);
