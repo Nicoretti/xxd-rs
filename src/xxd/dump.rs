@@ -1,7 +1,9 @@
 //! The dump module contains code related for outputing/dumping data.
 use std::fmt::Display;
+use std::fmt::Error;
 use std::convert::From;
 use super::errors::*;
+use std::convert::Into;
 
 /// Enum which provides all possible output value formats supported by the dump module.
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -159,7 +161,7 @@ impl<'a> OutputLine<'a> {
 }
 
 impl<'a> ::fmt::Display for OutputLine<'a> {
-    fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
+    fn fmt(&self, f: &mut ::fmt::Formatter) -> ::std::fmt::Result {
         let format_size = |fmt: OutputFormat| match fmt {
             OutputFormat::Hex => 2,
             OutputFormat::Octal => 3,
@@ -169,8 +171,7 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
         if self.output_settings.show_address {
             self.write_address(f);
         }
-        // FIXME NiCo: whats the issues here?!
-        let bytes_written = self.write_bytes(f).unwrap();
+        let bytes_written = self.write_bytes(f).map_err(|e| ::std::fmt::Error)?;
         let expected_length = self.output_settings.columns * self.output_settings.group_size *
                               format_size(self.output_settings.output_fmt) +
                               (self.output_settings.columns);
