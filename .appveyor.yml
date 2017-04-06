@@ -91,9 +91,23 @@ install:
 # the "directory does not contain a project or solution file" error.
 build: false
 
+deploy:
+  release: xxd-rs-$(appveyor_build_version)
+  description: 'win release'
+  provider: GitHub
+  auth_token:
+    secure: AGOWGYVWUaHDlQGVypYevU5r1A87eEifGg9SxF8wdDR/MWY/l2Uvmen4gbBQF9aPZm4gEYPvV/SQ+XeIC5ME0QjKWtRbBNuOJQGvRZ7dhWd8FoBLHRX0N9y87axeCjFMMEngkyg1B3B3kpDeXzY0UT/ClUBTNTuYeVdcWuTEjyUCI81WAkCSVrnkuQVNkQVXZi20tuIG5ZtnkxxWYZWOJ01al2vjW9K2qtjqXs3D0u6sdmuMkt6quZ3FE9cTdS3KDARO1PVVANZTsXLx3CQa55SbDj53xYNxk1FnqIP2L43zrE7s5J8ROdNGyCVRgqXiKKZ1znIpEf8s4FxtoWEgOzFPj8aLClHMdhM27kxvKFC0N3TPnOxI+1HNkuOxXz3nW7EjnEc45MaXyDDuZhSKJ892sTJLXaTXPC45LN5B4gMYHVFno9ceWZpLTbpJ23AA1xNBg1VLNx6Pu5LoYfOqH2qhgqEAlntYHOwOoXJX/6xraOF4gbDLQ33G+aTipufDAzV1Zixrc7ZQzZHPAeMs2vxJ2ZPFNe4FPztcKsyEFKPIpPZJPKsjTVt6Up0/ay3LwUCxkv+MyY10pFsJhxonO1NUnueAtPQ/9wV5v5XJXGaC7Dkw10iaEIEtYJFLgCpay72V2VwbwOXdeFkKfbgkqvOtR5bIrcnT/O6LebW6RUM=
+  artifact: target/release/xxd-rs.exe            # upload all NuGet packages to release assets
+  draft: false
+  prerelease: false
+  on:
+    branch: master                 # release from master branch only
+    appveyor_repo_tag: true        # deploy on tag push only
+
 # Uses 'cargo test' to run tests and build. Alternatively, the project may call compiled programs
 #directly or perform other testing commands. Rust will automatically be placed in the PATH
 # environment variable.
 test_script:
   - cargo t --verbose %cargoflags%
   - cargo b --verbose %cargoflags%
+
