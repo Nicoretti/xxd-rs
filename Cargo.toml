@@ -3,6 +3,10 @@ name = "xxd-rs"
 version = "0.1.0"
 authors = ["Nicola Coretti <nico.coretti@gmail.com>"]
 
+build = "build.rs"
+[build-dependencies]
+clap = "2.16.2"
+
 [lib]
 name = "xxd"
 path = "src/xxd/lib.rs"
