@@ -3,7 +3,7 @@ extern crate clap;
 extern crate error_chain;
 extern crate xxd;
 
-use clap::{Arg, ArgMatches, App, SubCommand};
+use clap::{Arg, ArgMatches, App, SubCommand, AppSettings};
 use std::process::exit;
 use std::fmt::Display;
 use std::fs::File;
@@ -123,6 +123,7 @@ fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
         .version("0.1.0")
         .author("Nicola Coretti <nicola.coretti@gmail.com>")
         .about("make a hexdump or the reverse")
+        .global_settings(&[AppSettings::ColoredHelp])
         .arg(Arg::with_name("infile")
                  .required(false)
                  .global(true)
