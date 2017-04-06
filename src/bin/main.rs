@@ -157,6 +157,7 @@ fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
                                  .possible_value("hex")
                                  .possible_value("bin")
                                  .possible_value("oct")
+                                 .possible_value("dec")
                                  .help("Specifies the output format for the value (default: hex)"))
                         .arg(Arg::with_name("group-size")
                                  .short("g")
