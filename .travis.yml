@@ -9,6 +9,9 @@ os:
 matrix:
   allow_failures:
   - rust: nightly
+script:
+- cargo test
+- cargo build --release
 deploy:
   provider: releases
   api_key:
