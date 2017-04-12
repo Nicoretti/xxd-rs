@@ -8,6 +8,7 @@ use std::convert::Into;
 /// Enum which provides all possible output value formats supported by the dump module.
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum OutputFormat {
+    HexUpperCase,
     Hex,
     Decimal,
     Octal,
@@ -16,7 +17,8 @@ pub enum OutputFormat {
 
 impl From<String> for OutputFormat {
     fn from(format_string: String) -> Self {
-        match format_string.to_lowercase().as_ref() {
+        match format_string.as_ref() {
+            "Hex" => OutputFormat::HexUpperCase,
             "hex" => OutputFormat::Hex,
             "dec" => OutputFormat::Decimal,
             "oct" => OutputFormat::Octal,
@@ -44,7 +46,7 @@ impl OutputSettings {
             group_size: 1,
             columns: 8,
             show_interpretation: true,
-            output_fmt: OutputFormat::Hex,
+            output_fmt: OutputFormat::HexUpperCase,
         }
     }
 
@@ -129,8 +131,12 @@ impl<'a> OutputLine<'a> {
 
     fn write_formated_byte(&self, f: &mut ::fmt::Formatter, byte: &u8) -> Result<usize> {
         match self.output_settings.output_fmt {
-            OutputFormat::Hex => {
+            OutputFormat::HexUpperCase => {
                 write!(f, "{:02.X}", byte)?;
+                Ok(2)
+            }
+            OutputFormat::Hex => {
+                write!(f, "{:02.x}", byte)?;
                 Ok(2)
             }
             OutputFormat::Octal => {
@@ -149,7 +155,7 @@ impl<'a> OutputLine<'a> {
     }
 
     fn write_interpretation(&self, f: &mut ::fmt::Formatter) -> Result<usize> {
-        write!(f, "   ");
+        write!(f, " ")?;
         for b in self.data.iter() {
             match *b {
                 character @ 20u8...126u8 => write!(f, "{}", character as char)?,
@@ -163,6 +169,7 @@ impl<'a> OutputLine<'a> {
 impl<'a> ::fmt::Display for OutputLine<'a> {
     fn fmt(&self, f: &mut ::fmt::Formatter) -> ::std::fmt::Result {
         let format_size = |fmt: OutputFormat| match fmt {
+            OutputFormat::HexUpperCase => 2,
             OutputFormat::Hex => 2,
             OutputFormat::Octal => 3,
             OutputFormat::Decimal => 3,
@@ -266,15 +273,26 @@ mod test {
     #[test]
     fn output_settings_from_string() {
         assert_eq!(OutputFormat::Binary, OutputFormat::from("bin".to_string()));
+        assert_eq!(OutputFormat::HexUpperCase,
+                   OutputFormat::from("Hex".to_string()));
         assert_eq!(OutputFormat::Hex, OutputFormat::from("hex".to_string()));
         assert_eq!(OutputFormat::Octal, OutputFormat::from("oct".to_string()));
         assert_eq!(OutputFormat::Decimal, OutputFormat::from("dec".to_string()));
+    }
 
-        assert_eq!(OutputFormat::Binary, OutputFormat::from("Bin".to_string()));
-        assert_eq!(OutputFormat::Hex, OutputFormat::from("hEx".to_string()));
-        assert_eq!(OutputFormat::Octal, OutputFormat::from("ocT".to_string()));
+    #[test]
+    #[should_panic]
+    fn output_settings_from_panics_on_uppercase() {
         assert_eq!(OutputFormat::Decimal, OutputFormat::from("DEC".to_string()));
     }
+
+    #[test]
+    #[should_panic]
+    fn output_settings_from_panics_on_unknown_string() {
+        assert_eq!(OutputFormat::Decimal,
+                   OutputFormat::from("SomeRandomString".to_string()));
+    }
+
 
     #[test]
     fn outputline_can_be_constructed() {
@@ -287,7 +305,7 @@ mod test {
     fn default_output_format_for_a_single_line() {
         let fixture = TestFixture::new();
         let output_line = OutputLine::new(fixture.data());
-        let expected_output = "00000000: 00 FF 7F 80 38 41 01 21    ....8A.!";
+        let expected_output = "00000000: 00 FF 7F 80 38 41 01 21  ....8A.!";
         let mut buffer = String::new();
         let result = write!(&mut buffer, "{}", output_line);
         assert_eq!(Ok(()), result);
@@ -298,7 +316,7 @@ mod test {
     fn default_output_format_for_a_single_line_with_padding() {
         let fixture = TestFixture::new();
         let output_line = OutputLine::new(fixture.small_data());
-        let expected_output = "00000000: 00 FF 50 2C 07             ..P,.";
+        let expected_output = "00000000: 00 FF 50 2C 07           ..P,.";
         let mut buffer = String::new();
         let result = write!(&mut buffer, "{}", output_line);
         assert_eq!(Ok(()), result);
@@ -310,7 +328,7 @@ mod test {
         let fixture = TestFixture::new();
         let output_settings = OutputSettings::new().format(OutputFormat::Octal);
         let output_line = OutputLine::new(fixture.data()).format(output_settings);
-        let expected_output = "00000000: 000 377 177 200 070 101 001 041    ....8A.!";
+        let expected_output = "00000000: 000 377 177 200 070 101 001 041  ....8A.!";
         let mut buffer = String::new();
         let result = write!(&mut buffer, "{}", output_line);
         assert_eq!(Ok(()), result);
@@ -322,7 +340,7 @@ mod test {
         let fixture = TestFixture::new();
         let output_settings = OutputSettings::new().format(OutputFormat::Octal);
         let output_line = OutputLine::new(fixture.small_data()).format(output_settings);
-        let expected_output = "00000000: 000 377 120 054 007                ..P,.";
+        let expected_output = "00000000: 000 377 120 054 007              ..P,.";
         let mut buffer = String::new();
         let result = write!(&mut buffer, "{}", output_line);
         assert_eq!(Ok(()), result);
@@ -334,7 +352,7 @@ mod test {
         let fixture = TestFixture::new();
         let output_settings = OutputSettings::new().format(OutputFormat::Binary);
         let output_line = OutputLine::new(fixture.data()).format(output_settings);
-        let expected_output = "00000000: 00000000 11111111 01111111 10000000 00111000 01000001 00000001 00100001    ....8A.!";
+        let expected_output = "00000000: 00000000 11111111 01111111 10000000 00111000 01000001 00000001 00100001  ....8A.!";
         let mut buffer = String::new();
         let result = write!(&mut buffer, "{}", output_line);
         assert_eq!(Ok(()), result);
@@ -346,7 +364,7 @@ mod test {
         let fixture = TestFixture::new();
         let output_settings = OutputSettings::new().format(OutputFormat::Binary);
         let output_line = OutputLine::new(fixture.small_data()).format(output_settings);
-        let expected_output = "00000000: 00000000 11111111 01010000 00101100 00000111                               ..P,.";
+        let expected_output = "00000000: 00000000 11111111 01010000 00101100 00000111                             ..P,.";
         let mut buffer = String::new();
         let result = write!(&mut buffer, "{}", output_line);
         assert_eq!(Ok(()), result);
