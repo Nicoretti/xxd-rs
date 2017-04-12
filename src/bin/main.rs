@@ -89,10 +89,15 @@ fn create_output_settings<'a>(args: &ArgMatches<'a>) -> Result<::xxd::dump::Outp
     let columns = usize::from_str_radix(args.value_of("columns").unwrap_or("8"), 10)?;
     let format = args.value_of("format").unwrap_or("Hex");
     let group_size = usize::from_str_radix(args.value_of("group-size").unwrap_or("2"), 10)?;
-    Ok(::xxd::dump::OutputSettings::new()
-           .format(::xxd::dump::OutputFormat::from(format.to_string()))
-           .group_size(group_size)
-           .columns(columns))
+    let mut settings = ::xxd::dump::OutputSettings::new()
+        .format(::xxd::dump::OutputFormat::from(format.to_string()))
+        .group_size(group_size)
+        .columns(columns);
+    if args.is_present("plain_hexdump") {
+        Ok(settings.separator(false).show_address(false).show_interpretation(false))
+    } else {
+        Ok(settings)
+    }
 }
 
 fn dump_line(data: &[u8],

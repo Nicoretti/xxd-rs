@@ -35,6 +35,7 @@ pub struct OutputSettings {
     group_size: usize,
     columns: usize,
     show_interpretation: bool,
+    use_separator: bool,
     output_fmt: OutputFormat,
 }
 
@@ -46,6 +47,7 @@ impl OutputSettings {
             group_size: 1,
             columns: 8,
             show_interpretation: true,
+            use_separator: true,
             output_fmt: OutputFormat::HexUpperCase,
         }
     }
@@ -76,6 +78,11 @@ impl OutputSettings {
 
     pub fn show_interpretation(mut self, show: bool) -> Self {
         self.show_interpretation = show;
+        self
+    }
+
+    pub fn separator(mut self, use_separator: bool) -> Self {
+        self.use_separator = use_separator;
         self
     }
 
@@ -118,7 +125,7 @@ impl<'a> OutputLine<'a> {
         for b in self.data.iter() {
             byte_count += 1;
             let is_seperator_necessary = byte_count % self.output_settings.group_size == 0;
-            if is_seperator_necessary {
+            if is_seperator_necessary && self.output_settings.use_separator {
                 bytes_written += self.write_formated_byte(f, b)?;
                 write!(f, " ")?;
                 bytes_written += 1;
@@ -292,7 +299,6 @@ mod test {
         assert_eq!(OutputFormat::Decimal,
                    OutputFormat::from("SomeRandomString".to_string()));
     }
-
 
     #[test]
     fn outputline_can_be_constructed() {
