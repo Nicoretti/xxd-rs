@@ -7,7 +7,7 @@ use clap::ArgMatches;
 use std::process::exit;
 use std::fmt::Display;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write, stderr};
 
 mod cli;
 mod errors {
@@ -135,5 +135,5 @@ fn command_not_supported() -> Result<()> {
 }
 
 fn report_error<T: Display>(error: &T) {
-    println!("xxd-rs: {}", error)
+    std::io::stderr().write_fmt(format_args!("xxd-rs: {}\n", error));
 }
