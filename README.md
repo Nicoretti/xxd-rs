@@ -4,19 +4,19 @@
 # xxd-rs
 A rust based reimplementation of Juergen Weigert's hexdump utility, xxd.
 
-1. [Mission statement](Mission statement)
-    - [Goals](Goals)
-    - [Non Goals](Non Goals)
-2. [Examples](Examples)
-3. [Usage](Usage)
-    - [convert](convert)
-    - [dump](dump)
-    - [generate](generate)
-    - [help](help)
-4. [Compatibility](Compatibility)
-    - [xxd](xxd)
-    - [od](od)
-    - [hexdump](hexdump)
+1. Mission statement
+    - Goals
+    - Non Goals
+2. Examples
+3. Usage
+    - convert
+    - dump
+    - generate
+    - help
+4. Compatibility
+    - xxd
+    - od
+    - hexdump
 
 ## Mission statement
 This project was created to learn rust, therefore there is no perf
@@ -43,16 +43,20 @@ What this Project isn't about
 
 ## Examples
 ### hex dump
-![hex_dump](resources/screen_shot_hex_dump.png)
+![hex_dump_upper](resources/screen_shot_hex_upper.png)
+![hex_dump_lower](resources/screen_shot_hex_lower.png)
 
 ### binary dump
-![binary_dump](resources/screen_shot_binary_dump.png)
+![binary_dump](resources/screen_shot_bin.png)
 
 ### octal dump
-![octal_dump](resources/screen_shot_octal_dump.png)
+![octal_dump](resources/screen_shot_oct.png)
+
+### decimal dump
+![octal_dump](resources/screen_shot_dec.png)
 
 ### plain dump
-![plain_dump](resources/screen_shot_plain_dump.png)
+![plain_dump](resources/screen_shot_plain.png)
 
 ## Usage
 ```
