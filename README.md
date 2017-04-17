@@ -4,19 +4,19 @@
 # xxd-rs
 A rust based reimplementation of Juergen Weigert's hexdump utility, xxd.
 
-1. [Mission statement][Mission statement]
-    - [Goals][Goals]
-    - [Non Goals][Non Goals]
-2. [Examples][Examples]
-3. [Usage][Usage]
-    - [convert][convert]
-    - [dump][dump]
-    - [generate][generate]
-    - [help][help]
-4. [Compatibility][Compatibility]
-    - [xxd][xxd]
-    - [od][od]
-    - [hexdump][hexdump]
+1. [Mission statement](Mission statement)
+    - [Goals](Goals)
+    - [Non Goals](Non Goals)
+2. [Examples](Examples)
+3. [Usage](Usage)
+    - [convert](convert)
+    - [dump](dump)
+    - [generate](generate)
+    - [help](help)
+4. [Compatibility](Compatibility)
+    - [xxd](xxd)
+    - [od](od)
+    - [hexdump](hexdump)
 
 ## Mission statement
 This project was created to learn rust, therefore there is no perf
