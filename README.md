@@ -41,23 +41,6 @@ What this Project isn't about
     - If you are looking for a performant implementation of xxd
       checkout [go-xxd](https://github.com/felixge/go-xxd)
 
-## Examples
-### hex dump
-![hex_dump_upper](resources/screen_shot_hex_upper.png)
-![hex_dump_lower](resources/screen_shot_hex_lower.png)
-
-### binary dump
-![binary_dump](resources/screen_shot_bin.png)
-
-### octal dump
-![octal_dump](resources/screen_shot_oct.png)
-
-### decimal dump
-![octal_dump](resources/screen_shot_dec.png)
-
-### plain dump
-![plain_dump](resources/screen_shot_plain.png)
-
 ## Usage
 ```
 USAGE:
@@ -123,4 +106,21 @@ user@host:~$ xxd-rs -f hex file
 ```
 ### od
 ### hexdump
+
+## Examples
+### hex dump
+![hex_dump_upper](resources/screen_shot_hex_upper.png)
+![hex_dump_lower](resources/screen_shot_hex_lower.png)
+
+### binary dump
+![binary_dump](resources/screen_shot_bin.png)
+
+### octal dump
+![octal_dump](resources/screen_shot_oct.png)
+
+### decimal dump
+![octal_dump](resources/screen_shot_dec.png)
+
+### plain dump
+![plain_dump](resources/screen_shot_plain.png)
 
