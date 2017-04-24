@@ -7,6 +7,7 @@ use std::result;
 use std::fmt::Error;
 
 pub mod dump;
+pub mod generate;
 
 pub mod errors {
     error_chain!{
