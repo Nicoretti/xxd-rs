@@ -2,7 +2,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/nki2w285pjq73jhk/branch/master?svg=true)](https://ci.appveyor.com/project/Nicoretti/xxd-rs/branch/master)
 
 # xxd-rs
-A rust based reimplementation of Juergen Weigert's hexdump utility, xxd.
+A rust based reimplementation of [Juergen Weigert's](jnweiger@informatik.uni-erlangen.de) hexdump utility, xxd.
 
 1. Mission statement
     - Goals
@@ -103,7 +103,7 @@ user@host:~$ xxd file
 ```
 
 ```
-user@host:~$ xxd-rs -f hex file
+user@host:~$ xxd-rs dump file
 ```
 ### od
 ### hexdump
