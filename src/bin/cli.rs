@@ -92,11 +92,5 @@ pub fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
                                  .possible_value("oct")
                                  .possible_value("dec")
                                  .possible_value("bin")
-                                 .help("Specifies the output format (default: hex)"))
-                        .arg(Arg::with_name("Separator")
-                                 .long("separator")
-                                 .required(false)
-                                 .takes_value(true)
-                                 .help("Specifies the the separator between single values \
-                                        (default: ',')")))
+                                 .help("Specifies the output format (default: hex)")))
 }
