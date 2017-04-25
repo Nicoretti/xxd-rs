@@ -49,8 +49,8 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
     let length = args.value_of("length");
     let output_settings = create_output_settings(args)?;
-    let reader = create_reader(input_file.to_string())?;
-    let mut writer = create_writer(output_file.to_string())?;
+    let reader = ::xxd::create_reader(input_file.to_string())?;
+    let mut writer = ::xxd::create_writer(output_file.to_string())?;
     match length {
         None => {
             dump_iterator(Box::new(reader.bytes().skip(seek)),
@@ -105,26 +105,6 @@ fn dump_line(data: &[u8],
              output_settings: ::xxd::dump::OutputSettings) {
     let output_line = ::xxd::dump::OutputLine::new(data).format(output_settings);
     writer.write_fmt(format_args!("{}\n", output_line));
-}
-
-fn create_reader(path: String) -> Result<Box<std::io::Read>> {
-    match path.as_ref() {
-        "stdin" => Ok(Box::new(std::io::stdin())),
-        _ => {
-            let file_reader = std::fs::File::open(path)?;
-            Ok(Box::new(file_reader))
-        }
-    }
-}
-
-fn create_writer(path: String) -> Result<Box<std::io::Write>> {
-    match path.as_ref() {
-        "stdout" => Ok(Box::new(std::io::stdout())),
-        _ => {
-            let mut file_writer = std::fs::File::create(path)?;
-            Ok(Box::new(file_writer))
-        }
-    }
 }
 
 fn convert<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
