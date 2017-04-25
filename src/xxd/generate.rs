@@ -16,7 +16,7 @@ static RUST_PRE: &'static str = "let data = [";
 static RUST_SEPERATOR: &'static str = ",";
 static RUST_POST: &'static str = "];";
 
-trait Render {
+pub trait Render {
     fn render(&self, data: &[u8]) -> String;
 }
 
@@ -27,7 +27,7 @@ pub enum Language {
     Python,
 }
 
-struct Template {
+pub struct Template {
     prefix: String,
     separator: String,
     suffix: String,
@@ -35,7 +35,7 @@ struct Template {
 }
 
 impl Template {
-    fn new(lang: Language) -> Template {
+    pub fn new(lang: Language) -> Template {
         match lang {
             Language::C => {
                 Template {
