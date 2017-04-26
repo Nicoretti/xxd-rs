@@ -4,6 +4,7 @@ use std::fmt::Error;
 use std::convert::From;
 use super::errors::*;
 use std::convert::Into;
+use std::io::{Read, Write, stderr};
 
 /// Enum which provides all possible output value formats supported by the dump module.
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -199,6 +200,31 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
         Ok(())
     }
 }
+
+pub fn dump_iterator<I: Iterator<Item = ::result::Result<u8, ::std::io::Error>>>(it: Box<I>, writer: &mut Write, output_settings: OutputSettings) -> Result<()>{
+    let mut data: Vec<u8> = Vec::new();
+    let mut address = 0;
+    for byte in *it {
+        data.push(byte?);
+        if data.len() == output_settings.bytes_per_line() {
+            dump_line(&data, writer, output_settings.start_address(address));
+            address += data.len();
+            data.clear();
+        }
+    }
+    if data.len() > 0 {
+        dump_line(&data, writer, output_settings.start_address(address));
+        address += data.len();
+        data.clear();
+    }
+    Ok(())
+}
+
+fn dump_line(data: &[u8], writer: &mut Write, output_settings: OutputSettings) {
+    let output_line = OutputLine::new(data).format(output_settings);
+    writer.write_fmt(format_args!("{}\n", output_line));
+}
+
 
 mod test {
 

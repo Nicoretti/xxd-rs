@@ -3,10 +3,14 @@ extern crate clap;
 extern crate error_chain;
 extern crate xxd;
 
+use cli::create_arg_parser;
+use xxd::{create_reader, create_writer};
+use xxd::dump::{dump_iterator, OutputSettings, OutputFormat};
+
 use clap::ArgMatches;
+
 use std::process::exit;
 use std::fmt::Display;
-use std::fs::File;
 use std::io::{Read, Write, stderr};
 
 mod cli;
@@ -23,7 +27,7 @@ mod errors {
 use errors::*;
 
 fn main() {
-    let matches = cli::create_arg_parser().get_matches();
+    let matches = create_arg_parser().get_matches();
     match run(&matches) {
         Ok(_) => exit(0),
         Err(e) => {
@@ -48,49 +52,26 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     let input_file = args.value_of("infile").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
     let length = args.value_of("length");
-    let output_settings = create_output_settings(args)?;
-    let reader = ::xxd::create_reader(input_file.to_string())?;
-    let mut writer = ::xxd::create_writer(output_file.to_string())?;
+    let settings = create_dump_settings(args)?;
+    let reader = create_reader(input_file.to_string())?;
+    let mut writer = create_writer(output_file.to_string())?;
     match length {
-        None => {
-            dump_iterator(Box::new(reader.bytes().skip(seek)),
-                          &mut *writer,
-                          output_settings)
-        }
+        None => dump_iterator(Box::new(reader.bytes().skip(seek)), &mut *writer, settings),
         Some(n) => {
             dump_iterator(Box::new(reader.bytes().skip(seek).take(usize::from_str_radix(n, 10)?)),
                           &mut *writer,
-                          output_settings)
+                          settings)
         }
     };
     Ok(())
 }
 
-fn dump_iterator<I: Iterator<Item = std::result::Result<u8, std::io::Error>>>(it: Box<I>, writer: &mut std::io::Write, output_settings: ::xxd::dump::OutputSettings) -> Result<()>{
-    let mut data: Vec<u8> = Vec::new();
-    let mut address = 0;
-    for byte in *it {
-        data.push(byte?);
-        if data.len() == output_settings.bytes_per_line() {
-            dump_line(&data, writer, output_settings.start_address(address));
-            address += data.len();
-            data.clear();
-        }
-    }
-    if data.len() > 0 {
-        dump_line(&data, writer, output_settings.start_address(address));
-        address += data.len();
-        data.clear();
-    }
-    Ok(())
-}
-
-fn create_output_settings<'a>(args: &ArgMatches<'a>) -> Result<::xxd::dump::OutputSettings> {
+fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<OutputSettings> {
     let columns = usize::from_str_radix(args.value_of("columns").unwrap_or("8"), 10)?;
     let format = args.value_of("format").unwrap_or("hex");
     let group_size = usize::from_str_radix(args.value_of("group-size").unwrap_or("2"), 10)?;
-    let mut settings = ::xxd::dump::OutputSettings::new()
-        .format(::xxd::dump::OutputFormat::from(format.to_string()))
+    let mut settings = OutputSettings::new()
+        .format(OutputFormat::from(format.to_string()))
         .group_size(group_size)
         .columns(columns);
     if args.is_present("plain_hexdump") {
@@ -98,13 +79,6 @@ fn create_output_settings<'a>(args: &ArgMatches<'a>) -> Result<::xxd::dump::Outp
     } else {
         Ok(settings)
     }
-}
-
-fn dump_line(data: &[u8],
-             writer: &mut std::io::Write,
-             output_settings: ::xxd::dump::OutputSettings) {
-    let output_line = ::xxd::dump::OutputLine::new(data).format(output_settings);
-    writer.write_fmt(format_args!("{}\n", output_line));
 }
 
 fn convert<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
