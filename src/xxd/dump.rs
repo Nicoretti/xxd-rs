@@ -201,11 +201,14 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
     }
 }
 
-pub fn dump_iterator<I: Iterator<Item = ::result::Result<u8, ::std::io::Error>>>(it: Box<I>, writer: &mut Write, output_settings: OutputSettings) -> Result<()>{
+pub fn dump_iterator<I: Iterator<Item = u8>>(it: Box<I>,
+                                             writer: &mut Write,
+                                             output_settings: OutputSettings)
+                                             -> Result<()> {
     let mut data: Vec<u8> = Vec::new();
     let mut address = 0;
     for byte in *it {
-        data.push(byte?);
+        data.push(byte);
         if data.len() == output_settings.bytes_per_line() {
             dump_line(&data, writer, output_settings.start_address(address));
             address += data.len();

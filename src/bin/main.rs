@@ -56,9 +56,16 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     let reader = create_reader(input_file.to_string())?;
     let mut writer = create_writer(output_file.to_string())?;
     match length {
-        None => dump_iterator(Box::new(reader.bytes().skip(seek)), &mut *writer, settings),
+        None => {
+            dump_iterator(Box::new(reader.bytes().skip(seek).flat_map(|result| result)),
+                          &mut *writer,
+                          settings)
+        }
         Some(n) => {
-            dump_iterator(Box::new(reader.bytes().skip(seek).take(usize::from_str_radix(n, 10)?)),
+            dump_iterator(Box::new(reader.bytes()
+                                       .skip(seek)
+                                       .take(usize::from_str_radix(n, 10)?)
+                                       .flat_map(|result| result)),
                           &mut *writer,
                           settings)
         }
