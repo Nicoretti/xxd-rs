@@ -2,6 +2,7 @@
 use std::fmt::Display;
 use std::fmt::Error;
 use std::convert::From;
+use std::iter::Iterator;
 use super::errors::*;
 use std::convert::Into;
 use std::io::{Read, Write, stderr};
@@ -201,22 +202,29 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
     }
 }
 
-pub fn dump_iterator<I: Iterator<Item = u8>>(it: Box<I>,
-                                             writer: &mut Write,
-                                             output_settings: OutputSettings)
-                                             -> Result<()> {
+// try static dispatch by changing params -> accept gernic with trait bounds e.g. into_iter
+pub fn dump_iterator<I>(sequence: I,
+                        writer: &mut Write,
+                        output_settings: OutputSettings)
+                        -> Result<()>
+    where I: Iterator<Item = u8>
+{
     let mut data: Vec<u8> = Vec::new();
     let mut address = 0;
-    for byte in *it {
+    for byte in sequence {
         data.push(byte);
         if data.len() == output_settings.bytes_per_line() {
-            dump_line(&data, writer, output_settings.start_address(address));
+            dump_line(data.as_slice(),
+                      writer,
+                      output_settings.start_address(address));
             address += data.len();
             data.clear();
         }
     }
     if data.len() > 0 {
-        dump_line(&data, writer, output_settings.start_address(address));
+        dump_line(data.as_slice(),
+                  writer,
+                  output_settings.start_address(address));
         address += data.len();
         data.clear();
     }
@@ -404,5 +412,36 @@ mod test {
         let result = write!(&mut buffer, "{}", output_line);
         assert_eq!(Ok(()), result);
         assert_eq!(expected_output, buffer);
+    }
+
+    #[test]
+    fn dump_line() {
+        // set up
+        let fixture = TestFixture::new();
+        let expected_output = "00000000: 00 FF 50 2C 07           ..P,.\n";
+        let output_settings = OutputSettings::new().format(OutputFormat::HexUpperCase);
+        let mut buffer: Vec<u8> = Vec::new();
+
+        // run test scenario
+        super::dump_line(&fixture.small_data(), &mut buffer, output_settings);
+
+        // assert expectations
+        assert_eq!(expected_output.as_bytes(), buffer.as_slice());
+    }
+
+    #[test]
+    fn dump_iterator() {
+        // set up
+        let v: Vec<u8> = vec![0, 255, 80, 44, 7];
+        let small_data = v.into_iter();
+        let expected_output = "00000000: 00 FF 50 2C 07           ..P,.\n";
+        let output_settings = OutputSettings::new().format(OutputFormat::HexUpperCase);
+        let mut buffer: Vec<u8> = Vec::new();
+
+        // run test scenario
+        super::dump_iterator(small_data, &mut buffer, output_settings);
+
+        // assert expectations
+        assert_eq!(expected_output.as_bytes(), buffer.as_slice());
     }
 }
