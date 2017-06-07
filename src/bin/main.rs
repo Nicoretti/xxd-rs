@@ -6,6 +6,7 @@ extern crate xxd;
 use cli::create_arg_parser;
 use xxd::{create_reader, create_writer};
 use xxd::dump::{dump_iterator, OutputSettings, OutputFormat};
+use xxd::generate::{Template, Language, Render};
 
 use clap::ArgMatches;
 
@@ -88,12 +89,38 @@ fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<OutputSettings> {
     }
 }
 
+
 fn convert<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     command_not_supported()
 }
 
 fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
-    command_not_supported()
+    let args = args.ok_or("No arguments available")?;
+    let output_file = args.value_of("outfile").unwrap_or("stdout");
+    let input_file = args.value_of("infile").unwrap_or("stdin");
+    let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
+    let length = args.value_of("length");
+    let reader = create_reader(input_file.to_string())?;
+    let mut writer = create_writer(output_file.to_string())?;
+    let lang = xxd::generate::Language::from(args.value_of("template").unwrap_or("c"));
+    let template = Template::new(lang);
+    let data: Vec<u8> = match length {
+        None => {
+            reader.bytes()
+                .skip(seek)
+                .flat_map(|result| result)
+                .collect()
+        }
+        Some(n) => {
+            reader.bytes()
+                .skip(seek)
+                .take(usize::from_str_radix(n, 10)?)
+                .flat_map(|result| result)
+                .collect()
+        }
+    };
+    writer.write_fmt(format_args!("{}\n", template.render(&data)));
+    Ok(())
 }
 
 fn command_not_supported() -> Result<()> {
