@@ -1,6 +1,6 @@
 [package]
 name = "xxd-rs"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Nicola Coretti <nico.coretti@gmail.com>"]
 
 build = "build.rs"
