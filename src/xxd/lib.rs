@@ -1,5 +1,7 @@
 #[macro_use]
 extern crate error_chain;
+#[macro_use]
+extern crate nom;
 
 use error_chain::*;
 use std::fmt;
@@ -8,6 +10,7 @@ use std::fmt::Error;
 
 pub mod dump;
 pub mod generate;
+pub mod convert;
 
 pub mod errors {
     error_chain!{
