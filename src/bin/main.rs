@@ -41,7 +41,6 @@ fn main() {
 fn run(args: &ArgMatches) -> Result<()> {
     match args.subcommand_name() {
         Some("dump") => dump(args.subcommand_matches("dump")),
-        Some("convert") => convert(args.subcommand_matches("convert")),
         Some("generate") => generate(args.subcommand_matches("generate")),
         _ => bail!(args.usage()),
     }
