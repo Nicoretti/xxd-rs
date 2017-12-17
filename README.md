@@ -2,21 +2,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/nki2w285pjq73jhk/branch/master?svg=true)](https://ci.appveyor.com/project/Nicoretti/xxd-rs/branch/master)
 
 # xxd-rs
-A rust based reimplementation of [Juergen Weigert's](mailto:jnweiger@informatik.uni-erlangen.de) hexdump utility, xxd.
-
-1. Mission statement
-    - Goals
-    - Non Goals
-2. Examples
-3. Usage
-    - convert
-    - dump
-    - generate
-    - help
-4. Compatibility
-    - xxd
-    - od
-    - hexdump
+A rust based reimplementation of [Juergen Weigert's](jnweiger@informatik.uni-erlangen.de) hexdump utility, xxd.
 
 ## Mission statement
 This project was created to learn rust, therefore there is no perf
@@ -45,74 +31,70 @@ What this Project isn't about
 ## Usage
 ```
 USAGE:
-    xxd-rs [OPTIONS] [ARGS] [SUBCOMMAND]
+    xxd-rs [OPTIONS] [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
 OPTIONS:
-    -l, --length <length>    Amount of bytes which shall be read
-    -s, --seek <seek>        Offset in the file where to start reading
-
-ARGS:
-    <infile>     Input file which shall be used (default: stdin)
-    <outfile>    File to which the output will be written (default: stdout)
+    -i, --input-file <infile>      Input file which shall be used (default: stdin)
+    -l, --length <length>          Amount of bytes which shall be read
+    -o, --output-file <outfile>    File to which the output will be written (default: stdout)
+    -s, --seek <seek>              Offset in the file where to start reading
 
 SUBCOMMANDS:
-    convert     Converts input data to a file (e.g. hexstream -> binary file
     dump        Dumps an input file in the appropriate output format
     generate    Generates a source file containing the specified file as array
     help        Prints this message or the help of the given subcommand(s)
 ```
-### convert
-Not implemented yet
-
-### dump
-```
-USAGE:
-    xxd-rs dump [FLAGS] [OPTIONS] [ARGS]
-
-FLAGS:
-    -h, --help             Prints help information
-    -p, --plain-hexdump    output in postscript plain hexdump style.
-    -V, --version          Prints version information
-
-OPTIONS:
-    -c, --columns <columns>          Specifies the amount of output columns
-    -f, --format <format>            Specifies the output format for the value (default: Hex) [values: Hex, hex, bin, oct, dec]
-    -g, --group-size <group-size>    Separate  the output of every <bytes> bytes (two hex characters or eight bit-digits each) by a whitespace.
-    -l, --length <length>            Amount of bytes which shall be read
-    -s, --seek <seek>                Offset in the file where to start reading
-
-ARGS:
-    <infile>     Input file which shall be used (default: stdin)
-    <outfile>    File to which the output will be written (default: stdout)
-```
-### generate
-Not implemented yet
-
-### help
-Prints this message or the help of the given subcommand(s)
-
-## Compatibiility
-### xxd
-
-```
-user@host:~$ xxd file
-```
-
-```
-user@host:~$ xxd-rs dump file
-```
-### od
-### hexdump
 
 ## Examples
+1. Dump file
+```
+user@host:~$ xxd-rs dump -i file.txt
+```
+
+2. Dump file with 16 bit word size
+```
+user@host:~$ xxd-rs generate -g 2 -i file.txt
+```
+
+3. Dump 1024 bytes of file file starting at offset 128
+```
+user@host:~$ xxd-rs dump -s 128 -l 1024 -i file.txt
+```
+
+4. Generate cpp header file containing file in an cpp array
+```
+user@host:~$ xxd-rs generate -t cpp -i file.txt
+```
+
+## Migration/Compatibility
+Be aware that the output formats (especially the default) of hexdump, xxd, od, and xxd-rs differ.
+
+1. Dump file
+    1. xxd
+    ```
+    user@host:~$ xxd file
+    ```
+    2. od
+    ```
+    user@host:~$ od file
+    ```
+    3. hexdump
+    ```
+    user@host:~$ xxd-rs dump -i file
+    ```
+    4. xxd-rs
+    ```
+    user@host:~$ xxd-rs dump -i file
+    ```
+
+## Screenshots
 ### hex dump
 ![hex_dump_upper](resources/screen_shot_hex_upper.png)
 ![hex_dump_lower](resources/screen_shot_hex_lower.png)
-
 ### binary dump
 ![binary_dump](resources/screen_shot_bin.png)
 
