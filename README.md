@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/Nicoretti/xxd-rs.svg?branch=master)](https://travis-ci.org/Nicoretti/xxd-rs)
 [![Build status](https://ci.appveyor.com/api/projects/status/nki2w285pjq73jhk/branch/master?svg=true)](https://ci.appveyor.com/project/Nicoretti/xxd-rs/branch/master)
+[![crates-io](https://img.shields.io/crates/v/xxd-rs.svg)](https://crates.io/crates/xxd-rs)
 
 # xxd-rs
 A rust based reimplementation of [Juergen Weigert's](jnweiger@informatik.uni-erlangen.de) hexdump utility, xxd.
