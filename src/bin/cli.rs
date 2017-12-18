@@ -1,10 +1,10 @@
-use clap::{Arg, ArgMatches, App, SubCommand, AppSettings};
+use clap::{Arg, App, SubCommand, AppSettings};
 
 pub fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
     App::new("A rust based clone of the all time classic xxd tool")
-        .version("0.1.0")
-        .author("Nicola Coretti <nicola.coretti@gmail.com>")
-        .about("make a hexdump or the reverse")
+        .version(crate_version!())
+        .author(crate_authors!())
+        .about(crate_description!())
         .global_settings(&[AppSettings::ColoredHelp])
         .arg(Arg::with_name("infile")
                  .short("i")

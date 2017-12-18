@@ -6,7 +6,7 @@ readme = "README.md"
 authors = ["Nicola Coretti <nico.coretti@gmail.com>"]
 keywords = ["xxd", "hex-dump"]
 license-file = "LICENSE"
-version = "0.2.0"
+version = "0.2.1"
 build = "build.rs"
 
 [badges]
