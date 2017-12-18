@@ -20,24 +20,5 @@ pub mod errors {
         }
     }
 }
+
 use errors::*;
-
-pub fn create_reader(path: String) -> Result<Box<std::io::Read>> {
-    match path.as_ref() {
-        "stdin" => Ok(Box::new(std::io::stdin())),
-        _ => {
-            let file_reader = std::fs::File::open(path)?;
-            Ok(Box::new(file_reader))
-        }
-    }
-}
-
-pub fn create_writer(path: String) -> Result<Box<std::io::Write>> {
-    match path.as_ref() {
-        "stdout" => Ok(Box::new(std::io::stdout())),
-        _ => {
-            let mut file_writer = std::fs::File::create(path)?;
-            Ok(Box::new(file_writer))
-        }
-    }
-}
