@@ -39,7 +39,6 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -i, --input-file <infile>      Input file which shall be used (default: stdin)
     -l, --length <length>          Amount of bytes which shall be read
     -o, --output-file <outfile>    File to which the output will be written (default: stdout)
     -s, --seek <seek>              Offset in the file where to start reading
