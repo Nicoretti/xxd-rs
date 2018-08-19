@@ -5,14 +5,14 @@ extern crate error_chain;
 extern crate xxd;
 
 use cli::create_arg_parser;
-use xxd::dump::{dump_iterator, OutputSettings, OutputFormat};
-use xxd::generate::{Template, Language, Render};
+use xxd::dump::{dump_iterator, OutputFormat, OutputSettings};
+use xxd::generate::{Language, Render, Template};
 
 use clap::ArgMatches;
 
-use std::process::exit;
 use std::fmt::Display;
-use std::io::{Read, Write, stderr};
+use std::io::{stderr, Read, Write};
+use std::process::exit;
 
 mod cli;
 mod errors {
@@ -69,26 +69,27 @@ pub fn create_writer(path: String) -> Result<Box<std::io::Write>> {
 fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     let args = args.ok_or("No arguments available")?;
     let output_file = args.value_of("outfile").unwrap_or("stdout");
-    let input_file = args.value_of("infile").unwrap_or("stdin");
+    let input_file = args.value_of("file").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
     let length = args.value_of("length");
     let settings = create_dump_settings(args)?;
     let reader = create_reader(input_file.to_string())?;
     let mut writer = create_writer(output_file.to_string())?;
     match length {
-        None => {
-            dump_iterator(reader.bytes().skip(seek).flat_map(|result| result),
-                          &mut *writer,
-                          settings)
-        }
-        Some(n) => {
-            dump_iterator(reader.bytes()
-                              .skip(seek)
-                              .take(usize::from_str_radix(n, 10)?)
-                              .flat_map(|result| result),
-                          &mut *writer,
-                          settings)
-        }
+        None => dump_iterator(
+            reader.bytes().skip(seek).flat_map(|result| result),
+            &mut *writer,
+            settings,
+        ),
+        Some(n) => dump_iterator(
+            reader
+                .bytes()
+                .skip(seek)
+                .take(usize::from_str_radix(n, 10)?)
+                .flat_map(|result| result),
+            &mut *writer,
+            settings,
+        ),
     };
     Ok(())
 }
@@ -102,12 +103,14 @@ fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<OutputSettings> {
         .group_size(group_size)
         .columns(columns);
     if args.is_present("plain_hexdump") {
-        Ok(settings.separator(false).show_address(false).show_interpretation(false))
+        Ok(settings
+            .separator(false)
+            .show_address(false)
+            .show_interpretation(false))
     } else {
         Ok(settings)
     }
 }
-
 
 fn convert<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     command_not_supported()
@@ -116,7 +119,7 @@ fn convert<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
 fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     let args = args.ok_or("No arguments available")?;
     let output_file = args.value_of("outfile").unwrap_or("stdout");
-    let input_file = args.value_of("infile").unwrap_or("stdin");
+    let input_file = args.value_of("file").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
     let length = args.value_of("length");
     let reader = create_reader(input_file.to_string())?;
@@ -124,19 +127,17 @@ fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     let lang = xxd::generate::Language::from(args.value_of("template").unwrap_or("c"));
     let template = Template::new(lang);
     let data: Vec<u8> = match length {
-        None => {
-            reader.bytes()
-                .skip(seek)
-                .flat_map(|result| result)
-                .collect()
-        }
-        Some(n) => {
-            reader.bytes()
-                .skip(seek)
-                .take(usize::from_str_radix(n, 10)?)
-                .flat_map(|result| result)
-                .collect()
-        }
+        None => reader
+            .bytes()
+            .skip(seek)
+            .flat_map(|result| result)
+            .collect(),
+        Some(n) => reader
+            .bytes()
+            .skip(seek)
+            .take(usize::from_str_radix(n, 10)?)
+            .flat_map(|result| result)
+            .collect(),
     };
     writer.write_fmt(format_args!("{}\n", template.render(&data)));
     Ok(())

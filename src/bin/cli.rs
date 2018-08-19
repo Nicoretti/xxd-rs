@@ -1,4 +1,4 @@
-use clap::{Arg, App, SubCommand, AppSettings};
+use clap::{App, AppSettings, Arg, SubCommand};
 
 pub fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
     App::new("A rust based clone of the all time classic xxd tool")
@@ -6,13 +6,6 @@ pub fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
         .author(crate_authors!())
         .about(crate_description!())
         .global_settings(&[AppSettings::ColoredHelp])
-        .arg(Arg::with_name("infile")
-                 .short("i")
-                 .long("input-file")
-                 .required(false)
-                 .takes_value(true)
-                 .global(true)
-                 .help("Input file which shall be used (default: stdin)"))
         .arg(Arg::with_name("outfile")
                  .short("o")
                  .long("output-file")
@@ -36,6 +29,11 @@ pub fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
                  .help("Amount of bytes which shall be read"))
         .subcommand(SubCommand::with_name("dump")
                         .about("Dumps an input file in the appropriate output format")
+                        .arg(Arg::with_name("file")
+                                 .required(false)
+                                 .takes_value(true)
+                                 .global(true)
+                                 .help("Input file which shall be read (default: stdin)"))
                         .arg(Arg::with_name("plain_hexdump")
                                  .short("p")
                                  .long("plain-hexdump")
@@ -66,6 +64,11 @@ pub fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
                                  .help("Specifies the amount of output columns")))
         .subcommand(SubCommand::with_name("generate")
                         .about("Generates a source file containing the specified file as array")
+                        .arg(Arg::with_name("file")
+                                 .required(false)
+                                 .takes_value(true)
+                                 .global(true)
+                                 .help("Input file which shall be read (default: stdin)"))
                         .arg(Arg::with_name("template")
                                  .short("t")
                                  .long("template")
