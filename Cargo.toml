@@ -7,7 +7,7 @@ authors = ["Nicola Coretti <nico.coretti@gmail.com>"]
 keywords = ["xxd", "hex-dump"]
 license = "BSD-2-Clause" 
 license-file = "LICENSE"
-version = "0.2.2"
+version = "0.2.3"
 build = "build.rs"
 
 [badges]
