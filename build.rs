@@ -7,7 +7,7 @@ use std::env;
 include!("src/bin/cli.rs");
 
 fn main() {
-    let outdir = match env::var_os("PWD") {
+    let outdir = match env::var_os("OUT_DIR") {
         None => return,
         Some(outdir) => outdir,
     };
