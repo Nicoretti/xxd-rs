@@ -25,6 +25,7 @@ path = "src/xxd/lib.rs"
 name = "xxd-rs"
 test = false
 doc = false
+path = "src/bin/main.rs"
 
 [dependencies]
 nom = "3.0.0"
