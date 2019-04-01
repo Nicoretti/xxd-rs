@@ -1,4 +1,6 @@
 #[macro_use]
+extern crate human_panic;
+#[macro_use]
 extern crate clap;
 #[macro_use]
 extern crate error_chain;
@@ -28,6 +30,7 @@ mod errors {
 use errors::*;
 
 fn main() {
+    setup_panic!();
     let matches = create_arg_parser().get_matches();
     match run(&matches) {
         Ok(_) => exit(0),
