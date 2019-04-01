@@ -1,5 +1,4 @@
 //! The dump module contains code related for outputing/dumping data.
-use super::errors::*;
 use std::convert::From;
 use std::convert::Into;
 use std::fmt::Display;
@@ -116,12 +115,12 @@ impl<'a> OutputLine<'a> {
         }
     }
 
-    fn write_address(&self, f: &mut ::fmt::Formatter) -> Result<usize> {
+    fn write_address(&self, f: &mut ::fmt::Formatter) -> Result<usize, failure::Error> {
         write!(f, "{:08.X}: ", self.output_settings.start_address)?;
         Ok(10)
     }
 
-    fn write_bytes(&self, f: &mut ::fmt::Formatter) -> Result<usize> {
+    fn write_bytes(&self, f: &mut ::fmt::Formatter) -> Result<usize, failure::Error> {
         let mut byte_count = 0;
         let mut bytes_written = 0;
         for b in self.data.iter() {
@@ -138,7 +137,11 @@ impl<'a> OutputLine<'a> {
         Ok(bytes_written)
     }
 
-    fn write_formated_byte(&self, f: &mut ::fmt::Formatter, byte: &u8) -> Result<usize> {
+    fn write_formated_byte(
+        &self,
+        f: &mut ::fmt::Formatter,
+        byte: &u8,
+    ) -> Result<usize, failure::Error> {
         match self.output_settings.output_fmt {
             Format::HexUpperCase => {
                 write!(f, "{:02.X}", byte)?;
@@ -163,7 +166,7 @@ impl<'a> OutputLine<'a> {
         }
     }
 
-    fn write_interpretation(&self, f: &mut ::fmt::Formatter) -> Result<usize> {
+    fn write_interpretation(&self, f: &mut ::fmt::Formatter) -> Result<usize, failure::Error> {
         write!(f, " ")?;
         for b in self.data.iter() {
             match *b {
@@ -204,7 +207,11 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
 }
 
 // try static dispatch by changing params -> accept gernic with trait bounds e.g. into_iter
-pub fn dump_iterator<I>(sequence: I, writer: &mut Write, output_settings: Config) -> Result<()>
+pub fn dump_iterator<I>(
+    sequence: I,
+    writer: &mut Write,
+    output_settings: Config,
+) -> Result<(), failure::Error>
 where
     I: Iterator<Item = u8>,
 {

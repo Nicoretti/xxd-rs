@@ -1,7 +1,11 @@
 use std::process::{Command, Stdio};
 
 fn is_command_available(command: String) -> bool {
-    match Command::new(command).arg("-v").stdout(Stdio::null()).status() {
+    match Command::new(command)
+        .arg("-v")
+        .stdout(Stdio::null())
+        .status()
+    {
         Ok(status) => status.success(),
         _ => false,
     }

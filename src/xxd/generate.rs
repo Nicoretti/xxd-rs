@@ -1,4 +1,3 @@
-use super::errors::*;
 use std::convert::From;
 
 static C_PRE: &'static str = "const char data[] = {";
@@ -52,46 +51,36 @@ pub struct Template {
 impl Template {
     pub fn new(lang: Language) -> Template {
         match lang {
-            Language::C => {
-                Template {
-                    prefix: C_PRE.to_string(),
-                    separator: C_SEPERATOR.to_string(),
-                    suffix: C_POST.to_string(),
-                    bytes_per_line: 16,
-                }
-            }
-            Language::Cpp => {
-                Template {
-                    prefix: CPP_PRE.to_string(),
-                    separator: CPP_SEPERATOR.to_string(),
-                    suffix: CPP_POST.to_string(),
-                    bytes_per_line: 16,
-                }
-            }
-            Language::Python => {
-                Template {
-                    prefix: PYTHON_PRE.to_string(),
-                    separator: PYTHON_SEPERATOR.to_string(),
-                    suffix: PYTHON_POST.to_string(),
-                    bytes_per_line: 16,
-                }
-            }
-            Language::Rust => {
-                Template {
-                    prefix: RUST_PRE.to_string(),
-                    separator: RUST_SEPERATOR.to_string(),
-                    suffix: RUST_POST.to_string(),
-                    bytes_per_line: 16,
-                }
-            }
-            Language::Unknown => {
-                Template {
-                    prefix: "".to_string(),
-                    separator: ",".to_string(),
-                    suffix: "".to_string(),
-                    bytes_per_line: 16,
-                }
-            }
+            Language::C => Template {
+                prefix: C_PRE.to_string(),
+                separator: C_SEPERATOR.to_string(),
+                suffix: C_POST.to_string(),
+                bytes_per_line: 16,
+            },
+            Language::Cpp => Template {
+                prefix: CPP_PRE.to_string(),
+                separator: CPP_SEPERATOR.to_string(),
+                suffix: CPP_POST.to_string(),
+                bytes_per_line: 16,
+            },
+            Language::Python => Template {
+                prefix: PYTHON_PRE.to_string(),
+                separator: PYTHON_SEPERATOR.to_string(),
+                suffix: PYTHON_POST.to_string(),
+                bytes_per_line: 16,
+            },
+            Language::Rust => Template {
+                prefix: RUST_PRE.to_string(),
+                separator: RUST_SEPERATOR.to_string(),
+                suffix: RUST_POST.to_string(),
+                bytes_per_line: 16,
+            },
+            Language::Unknown => Template {
+                prefix: "".to_string(),
+                separator: ",".to_string(),
+                suffix: "".to_string(),
+                bytes_per_line: 16,
+            },
         }
     }
 }
@@ -165,8 +154,10 @@ mod test {
 
     #[test]
     fn render_c_template_with_large_data() {
-        let data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-                    22, 23, 24, 25, 26];
+        let data = [
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+            24, 25, 26,
+        ];
         let template = Template::new(Language::C);
         let expected_result = r#"const char data[] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
@@ -185,8 +176,10 @@ mod test {
 
     #[test]
     fn render_cplusplus_template_with_large_data() {
-        let data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-                    22, 23, 24, 25, 26];
+        let data = [
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+            24, 25, 26,
+        ];
         let template = Template::new(Language::Cpp);
         let expected_result = r#"const char data[] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
@@ -205,8 +198,10 @@ mod test {
 
     #[test]
     fn render_python_template_with_large_data() {
-        let data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-                    22, 23, 24, 25, 26];
+        let data = [
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+            24, 25, 26,
+        ];
         let template = Template::new(Language::Python);
         let expected_result = r#"data = [
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
@@ -225,8 +220,10 @@ mod test {
 
     #[test]
     fn render_rust_template_with_large_data() {
-        let data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-                    22, 23, 24, 25, 26];
+        let data = [
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+            24, 25, 26,
+        ];
         let template = Template::new(Language::Rust);
         let expected_result = r#"let data = [
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,

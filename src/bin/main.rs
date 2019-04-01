@@ -3,10 +3,11 @@ extern crate human_panic;
 #[macro_use]
 extern crate clap;
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 extern crate xxd;
 
 use cli::create_arg_parser;
+use failure::Error;
 use xxd::dump::{dump_iterator, Config, Format};
 use xxd::generate::{Language, Render, Template};
 
@@ -17,17 +18,6 @@ use std::io::{stderr, Read, Write};
 use std::process::exit;
 
 mod cli;
-mod errors {
-    error_chain! {
-        foreign_links {
-            ParseError(::std::num::ParseIntError);
-            Xxd(::xxd::errors::Error);
-            Io(::std::io::Error);
-        }
-    }
-}
-
-use errors::*;
 
 fn main() {
     setup_panic!();
@@ -41,15 +31,15 @@ fn main() {
     }
 }
 
-fn run(args: &ArgMatches) -> Result<()> {
+fn run(args: &ArgMatches) -> Result<(), failure::Error> {
     match args.subcommand_name() {
         Some("dump") => dump(args.subcommand_matches("dump")),
         Some("generate") => generate(args.subcommand_matches("generate")),
-        _ => bail!(args.usage()),
+        _ => bail!(format_err!("{}", args.usage())),
     }
 }
 
-pub fn create_reader(path: String) -> Result<Box<std::io::Read>> {
+pub fn create_reader(path: String) -> Result<Box<std::io::Read>, failure::Error> {
     match path.as_ref() {
         "stdin" => Ok(Box::new(std::io::stdin())),
         _ => {
@@ -59,7 +49,7 @@ pub fn create_reader(path: String) -> Result<Box<std::io::Read>> {
     }
 }
 
-pub fn create_writer(path: String) -> Result<Box<std::io::Write>> {
+pub fn create_writer(path: String) -> Result<Box<std::io::Write>, failure::Error> {
     match path.as_ref() {
         "stdout" => Ok(Box::new(std::io::stdout())),
         _ => {
@@ -69,8 +59,8 @@ pub fn create_writer(path: String) -> Result<Box<std::io::Write>> {
     }
 }
 
-fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
-    let args = args.ok_or("No arguments available")?;
+fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
+    let args = args.ok_or(format_err!("No arguments available"))?;
     let output_file = args.value_of("outfile").unwrap_or("stdout");
     let input_file = args.value_of("file").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
@@ -97,7 +87,7 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     Ok(())
 }
 
-fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config> {
+fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config, failure::Error> {
     let columns = usize::from_str_radix(args.value_of("columns").unwrap_or("8"), 10)?;
     let format = args.value_of("format").unwrap_or("hex");
     let group_size = usize::from_str_radix(args.value_of("group-size").unwrap_or("2"), 10)?;
@@ -115,12 +105,12 @@ fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config> {
     }
 }
 
-fn convert<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
+fn convert<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
     command_not_supported()
 }
 
-fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
-    let args = args.ok_or("No arguments available")?;
+fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
+    let args = args.ok_or(format_err!("No arguments available"))?;
     let output_file = args.value_of("outfile").unwrap_or("stdout");
     let input_file = args.value_of("file").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
@@ -146,8 +136,8 @@ fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     Ok(())
 }
 
-fn command_not_supported() -> Result<()> {
-    bail!("Command not supported yet!")
+fn command_not_supported() -> Result<(), failure::Error> {
+    bail!(format_err!("Command not supported yet!"))
 }
 
 fn report_error<T: Display>(error: &T) {
