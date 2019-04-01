@@ -5,7 +5,7 @@ extern crate error_chain;
 extern crate xxd;
 
 use cli::create_arg_parser;
-use xxd::dump::{dump_iterator, Format, OutputSettings};
+use xxd::dump::{dump_iterator, Config, Format};
 use xxd::generate::{Language, Render, Template};
 
 use clap::ArgMatches;
@@ -94,11 +94,11 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<()> {
     Ok(())
 }
 
-fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<OutputSettings> {
+fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config> {
     let columns = usize::from_str_radix(args.value_of("columns").unwrap_or("8"), 10)?;
     let format = args.value_of("format").unwrap_or("hex");
     let group_size = usize::from_str_radix(args.value_of("group-size").unwrap_or("2"), 10)?;
-    let mut settings = OutputSettings::new()
+    let mut settings = Config::new()
         .format(Format::from(format.to_string()))
         .group_size(group_size)
         .columns(columns);

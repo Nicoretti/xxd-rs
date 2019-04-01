@@ -31,7 +31,7 @@ impl From<String> for Format {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct OutputSettings {
+pub struct Config {
     start_address: usize,
     show_address: bool,
     group_size: usize,
@@ -41,9 +41,9 @@ pub struct OutputSettings {
     output_fmt: Format,
 }
 
-impl OutputSettings {
-    pub fn new() -> OutputSettings {
-        OutputSettings {
+impl Config {
+    pub fn new() -> Config {
+        Config {
             start_address: 0,
             show_address: true,
             group_size: 1,
@@ -97,19 +97,19 @@ impl OutputSettings {
 /// The `OutputLine` struct contains all  information needed to dump/output a single line of data.
 #[derive(Debug)]
 pub struct OutputLine<'a> {
-    output_settings: OutputSettings,
+    output_settings: Config,
     data: &'a [u8],
 }
 
 impl<'a> OutputLine<'a> {
     pub fn new(data: &[u8]) -> OutputLine {
         OutputLine {
-            output_settings: OutputSettings::new(),
+            output_settings: Config::new(),
             data: data,
         }
     }
 
-    pub fn format(self, settings: OutputSettings) -> Self {
+    pub fn format(self, settings: Config) -> Self {
         OutputLine {
             output_settings: settings,
             data: self.data,
@@ -204,11 +204,7 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
 }
 
 // try static dispatch by changing params -> accept gernic with trait bounds e.g. into_iter
-pub fn dump_iterator<I>(
-    sequence: I,
-    writer: &mut Write,
-    output_settings: OutputSettings,
-) -> Result<()>
+pub fn dump_iterator<I>(sequence: I, writer: &mut Write, output_settings: Config) -> Result<()>
 where
     I: Iterator<Item = u8>,
 {
@@ -238,7 +234,7 @@ where
     Ok(())
 }
 
-fn dump_line(data: &[u8], writer: &mut Write, output_settings: OutputSettings) {
+fn dump_line(data: &[u8], writer: &mut Write, output_settings: Config) {
     let output_line = OutputLine::new(data).format(output_settings);
     writer.write_fmt(format_args!("{}\n", output_line));
 }
@@ -272,7 +268,7 @@ mod test {
 
     #[test]
     fn output_settings_can_be_constructed() {
-        let output_settings = OutputSettings::new();
+        let output_settings = Config::new();
         assert!(true);
     }
 
@@ -284,7 +280,7 @@ mod test {
         let show_address = false;
         let show_interpretation = false;
 
-        let mut output_settings = OutputSettings::new()
+        let mut output_settings = Config::new()
             .format(format)
             .start_address(start_address)
             .group_size(group_size)
@@ -303,25 +299,19 @@ mod test {
         {
             let group_size = 8;
             let columns = 2;
-            let mut output_settings = OutputSettings::new()
-                .columns(columns)
-                .group_size(group_size);
+            let mut output_settings = Config::new().columns(columns).group_size(group_size);
             assert_eq!(group_size * columns, output_settings.bytes_per_line())
         }
         {
             let group_size = 5;
             let columns = 4;
-            let mut output_settings = OutputSettings::new()
-                .columns(columns)
-                .group_size(group_size);
+            let mut output_settings = Config::new().columns(columns).group_size(group_size);
             assert_eq!(group_size * columns, output_settings.bytes_per_line())
         }
         {
             let group_size = 9;
             let columns = 4;
-            let mut output_settings = OutputSettings::new()
-                .columns(columns)
-                .group_size(group_size);
+            let mut output_settings = Config::new().columns(columns).group_size(group_size);
             assert_eq!(group_size * columns, output_settings.bytes_per_line())
         }
     }
@@ -382,7 +372,7 @@ mod test {
     #[test]
     fn octal_output_format_on_a_single_line() {
         let fixture = TestFixture::new();
-        let output_settings = OutputSettings::new().format(Format::Octal);
+        let output_settings = Config::new().format(Format::Octal);
         let output_line = OutputLine::new(fixture.data()).format(output_settings);
         let expected_output = "00000000: 000 377 177 200 070 101 001 041  ....8A.!";
         let mut buffer = String::new();
@@ -394,7 +384,7 @@ mod test {
     #[test]
     fn octal_output_format_for_a_single_line_with_padding() {
         let fixture = TestFixture::new();
-        let output_settings = OutputSettings::new().format(Format::Octal);
+        let output_settings = Config::new().format(Format::Octal);
         let output_line = OutputLine::new(fixture.small_data()).format(output_settings);
         let expected_output = "00000000: 000 377 120 054 007              ..P,.";
         let mut buffer = String::new();
@@ -406,7 +396,7 @@ mod test {
     #[test]
     fn binary_output_format_on_a_single_line() {
         let fixture = TestFixture::new();
-        let output_settings = OutputSettings::new().format(Format::Binary);
+        let output_settings = Config::new().format(Format::Binary);
         let output_line = OutputLine::new(fixture.data()).format(output_settings);
         let expected_output = "00000000: 00000000 11111111 01111111 10000000 00111000 01000001 00000001 00100001  ....8A.!";
         let mut buffer = String::new();
@@ -418,7 +408,7 @@ mod test {
     #[test]
     fn binary_output_format_for_a_single_line_with_padding() {
         let fixture = TestFixture::new();
-        let output_settings = OutputSettings::new().format(Format::Binary);
+        let output_settings = Config::new().format(Format::Binary);
         let output_line = OutputLine::new(fixture.small_data()).format(output_settings);
         let expected_output = "00000000: 00000000 11111111 01010000 00101100 00000111                             ..P,.";
         let mut buffer = String::new();
@@ -432,7 +422,7 @@ mod test {
         // set up
         let fixture = TestFixture::new();
         let expected_output = "00000000: 00 FF 50 2C 07           ..P,.\n";
-        let output_settings = OutputSettings::new().format(Format::HexUpperCase);
+        let output_settings = Config::new().format(Format::HexUpperCase);
         let mut buffer: Vec<u8> = Vec::new();
 
         // run test scenario
@@ -448,7 +438,7 @@ mod test {
         let v: Vec<u8> = vec![0, 255, 80, 44, 7];
         let small_data = v.into_iter();
         let expected_output = "00000000: 00 FF 50 2C 07           ..P,.\n";
-        let output_settings = OutputSettings::new().format(Format::HexUpperCase);
+        let output_settings = Config::new().format(Format::HexUpperCase);
         let mut buffer: Vec<u8> = Vec::new();
 
         // run test scenario
