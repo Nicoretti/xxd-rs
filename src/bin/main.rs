@@ -2,19 +2,18 @@
 extern crate human_panic;
 #[macro_use]
 extern crate clap;
-#[macro_use]
 extern crate failure;
 extern crate xxd;
 
 use cli::create_arg_parser;
-use failure::Error;
+use failure::*;
 use xxd::dump::{dump_iterator, Config, Format};
-use xxd::generate::{Language, Render, Template};
+use xxd::generate::{Render, Template};
 
 use clap::ArgMatches;
 
 use std::fmt::Display;
-use std::io::{stderr, Read, Write};
+use std::io::{Read, Write};
 use std::process::exit;
 
 mod cli;
@@ -91,7 +90,7 @@ fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config, failure::Er
     let columns = usize::from_str_radix(args.value_of("columns").unwrap_or("8"), 10)?;
     let format = args.value_of("format").unwrap_or("hex");
     let group_size = usize::from_str_radix(args.value_of("group-size").unwrap_or("2"), 10)?;
-    let mut settings = Config::new()
+    let settings = Config::new()
         .format(Format::from(format.to_string()))
         .group_size(group_size)
         .columns(columns);
@@ -103,10 +102,6 @@ fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config, failure::Er
     } else {
         Ok(settings)
     }
-}
-
-fn convert<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
-    command_not_supported()
 }
 
 fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {

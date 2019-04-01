@@ -1,9 +1,6 @@
 //! The dump module contains code related for outputing/dumping data.
 use std::convert::From;
-use std::convert::Into;
-use std::fmt::Display;
-use std::fmt::Error;
-use std::io::{stderr, Read, Write};
+use std::io::Write;
 use std::iter::Iterator;
 
 /// Enum which provides all possible output value formats supported by the dump module.
@@ -190,13 +187,13 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
         if self.output_settings.show_address {
             self.write_address(f);
         }
-        let bytes_written = self.write_bytes(f).map_err(|e| ::std::fmt::Error)?;
+        let bytes_written = self.write_bytes(f).map_err(|_| ::std::fmt::Error)?;
         let expected_length = self.output_settings.columns
             * self.output_settings.group_size
             * format_size(self.output_settings.output_fmt)
             + (self.output_settings.columns);
         let padding = expected_length - bytes_written;
-        for i in 0..padding {
+        for _ in 0..padding {
             write!(f, " ")?;
         }
         if self.output_settings.show_interpretation {
@@ -235,7 +232,6 @@ where
             writer,
             output_settings.start_address(address),
         );
-        address += data.len();
         data.clear();
     }
     Ok(())
@@ -246,6 +242,7 @@ fn dump_line(data: &[u8], writer: &mut Write, output_settings: Config) {
     writer.write_fmt(format_args!("{}\n", output_line));
 }
 
+#[cfg(test)]
 mod test {
 
     use super::*;
@@ -275,7 +272,7 @@ mod test {
 
     #[test]
     fn output_settings_can_be_constructed() {
-        let output_settings = Config::new();
+        let _output_settings = Config::new();
         assert!(true);
     }
 
@@ -287,7 +284,7 @@ mod test {
         let show_address = false;
         let show_interpretation = false;
 
-        let mut output_settings = Config::new()
+        let output_settings = Config::new()
             .format(format)
             .start_address(start_address)
             .group_size(group_size)
@@ -306,19 +303,19 @@ mod test {
         {
             let group_size = 8;
             let columns = 2;
-            let mut output_settings = Config::new().columns(columns).group_size(group_size);
+            let output_settings = Config::new().columns(columns).group_size(group_size);
             assert_eq!(group_size * columns, output_settings.bytes_per_line())
         }
         {
             let group_size = 5;
             let columns = 4;
-            let mut output_settings = Config::new().columns(columns).group_size(group_size);
+            let output_settings = Config::new().columns(columns).group_size(group_size);
             assert_eq!(group_size * columns, output_settings.bytes_per_line())
         }
         {
             let group_size = 9;
             let columns = 4;
-            let mut output_settings = Config::new().columns(columns).group_size(group_size);
+            let output_settings = Config::new().columns(columns).group_size(group_size);
             assert_eq!(group_size * columns, output_settings.bytes_per_line())
         }
     }
@@ -350,7 +347,7 @@ mod test {
     #[test]
     fn outputline_can_be_constructed() {
         let fixture = TestFixture::new();
-        let output_line = OutputLine::new(fixture.data());
+        let _output_line = OutputLine::new(fixture.data());
         assert!(true);
     }
 

@@ -126,6 +126,7 @@ impl Render for Template {
     }
 }
 
+#[cfg(test)]
 mod test {
     use super::*;
 

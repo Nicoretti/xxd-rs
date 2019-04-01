@@ -1,7 +1,6 @@
-use nom::{IResult, is_digit, be_u8, be_u16, ErrorKind};
+use std::num::ParseIntError;
 use std::str;
 use std::str::FromStr;
-use std::num::ParseIntError;
 
 fn hex_string_to_u8(s: &str) -> Result<u8, ParseIntError> {
     u8::from_str_radix(s, 16)
@@ -44,10 +43,11 @@ named!(hexdum_line<&str, Line>,
     )
 );
 
+#[cfg(test)]
 mod test {
 
     use super::*;
-    use std::fmt::Write;
+    use nom::IResult;
 
     #[test]
     fn address_parser() {
@@ -69,24 +69,30 @@ mod test {
         }
         {
             let result = bytes(" AA BB CC EE\n BB DD");
-            assert_eq!(IResult::Done("", vec![0xAA, 0xBB, 0xCC, 0xEE, 0xBB, 0xDD]),
-                       result);
+            assert_eq!(
+                IResult::Done("", vec![0xAA, 0xBB, 0xCC, 0xEE, 0xBB, 0xDD]),
+                result
+            );
         }
         {
             let result = bytes(" AA BB CC EE xxx  BB DD");
-            assert_eq!(IResult::Done("xxx  BB DD", vec![0xAA, 0xBB, 0xCC, 0xEE]),
-                       result)
+            assert_eq!(
+                IResult::Done("xxx  BB DD", vec![0xAA, 0xBB, 0xCC, 0xEE]),
+                result
+            )
         }
     }
 
     #[test]
     fn hexdump_line_parser() {
         {
-            let expected_result = IResult::Done("",
-                                                Line {
-                                                    address: 112233,
-                                                    data: vec![0xAA, 0xBB, 0xCC, 0xEE],
-                                                });
+            let expected_result = IResult::Done(
+                "",
+                Line {
+                    address: 112233,
+                    data: vec![0xAA, 0xBB, 0xCC, 0xEE],
+                },
+            );
             let result = hexdum_line("00112233: AA BB CC EE   ....\n");
             assert_eq!(expected_result, result);
         }
