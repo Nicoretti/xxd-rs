@@ -1,15 +1,15 @@
 //! The dump module contains code related for outputing/dumping data.
+use super::errors::*;
+use std::convert::From;
+use std::convert::Into;
 use std::fmt::Display;
 use std::fmt::Error;
-use std::convert::From;
+use std::io::{stderr, Read, Write};
 use std::iter::Iterator;
-use super::errors::*;
-use std::convert::Into;
-use std::io::{Read, Write, stderr};
 
 /// Enum which provides all possible output value formats supported by the dump module.
 #[derive(Debug, PartialEq, Clone, Copy)]
-pub enum OutputFormat {
+pub enum Format {
     HexUpperCase,
     Hex,
     Decimal,
@@ -17,14 +17,14 @@ pub enum OutputFormat {
     Binary,
 }
 
-impl From<String> for OutputFormat {
+impl From<String> for Format {
     fn from(format_string: String) -> Self {
         match format_string.as_ref() {
-            "Hex" => OutputFormat::HexUpperCase,
-            "hex" => OutputFormat::Hex,
-            "dec" => OutputFormat::Decimal,
-            "oct" => OutputFormat::Octal,
-            "bin" => OutputFormat::Binary,
+            "Hex" => Format::HexUpperCase,
+            "hex" => Format::Hex,
+            "dec" => Format::Decimal,
+            "oct" => Format::Octal,
+            "bin" => Format::Binary,
             _ => panic!("Invalid output format"),
         }
     }
@@ -38,7 +38,7 @@ pub struct OutputSettings {
     columns: usize,
     show_interpretation: bool,
     use_separator: bool,
-    output_fmt: OutputFormat,
+    output_fmt: Format,
 }
 
 impl OutputSettings {
@@ -50,7 +50,7 @@ impl OutputSettings {
             columns: 8,
             show_interpretation: true,
             use_separator: true,
-            output_fmt: OutputFormat::HexUpperCase,
+            output_fmt: Format::HexUpperCase,
         }
     }
 
@@ -88,7 +88,7 @@ impl OutputSettings {
         self
     }
 
-    pub fn format(mut self, fmt: OutputFormat) -> Self {
+    pub fn format(mut self, fmt: Format) -> Self {
         self.output_fmt = fmt;
         self
     }
@@ -140,23 +140,23 @@ impl<'a> OutputLine<'a> {
 
     fn write_formated_byte(&self, f: &mut ::fmt::Formatter, byte: &u8) -> Result<usize> {
         match self.output_settings.output_fmt {
-            OutputFormat::HexUpperCase => {
+            Format::HexUpperCase => {
                 write!(f, "{:02.X}", byte)?;
                 Ok(2)
             }
-            OutputFormat::Hex => {
+            Format::Hex => {
                 write!(f, "{:02.x}", byte)?;
                 Ok(2)
             }
-            OutputFormat::Octal => {
+            Format::Octal => {
                 write!(f, "{:03.o}", byte)?;
                 Ok(3)
             }
-            OutputFormat::Decimal => {
+            Format::Decimal => {
                 write!(f, "{:03}", byte)?;
                 Ok(3)
             }
-            OutputFormat::Binary => {
+            Format::Binary => {
                 write!(f, "{:08b}", byte)?;
                 Ok(8)
             }
@@ -177,20 +177,21 @@ impl<'a> OutputLine<'a> {
 
 impl<'a> ::fmt::Display for OutputLine<'a> {
     fn fmt(&self, f: &mut ::fmt::Formatter) -> ::std::fmt::Result {
-        let format_size = |fmt: OutputFormat| match fmt {
-            OutputFormat::HexUpperCase => 2,
-            OutputFormat::Hex => 2,
-            OutputFormat::Octal => 3,
-            OutputFormat::Decimal => 3,
-            OutputFormat::Binary => 8,
+        let format_size = |fmt: Format| match fmt {
+            Format::HexUpperCase => 2,
+            Format::Hex => 2,
+            Format::Octal => 3,
+            Format::Decimal => 3,
+            Format::Binary => 8,
         };
         if self.output_settings.show_address {
             self.write_address(f);
         }
         let bytes_written = self.write_bytes(f).map_err(|e| ::std::fmt::Error)?;
-        let expected_length = self.output_settings.columns * self.output_settings.group_size *
-                              format_size(self.output_settings.output_fmt) +
-                              (self.output_settings.columns);
+        let expected_length = self.output_settings.columns
+            * self.output_settings.group_size
+            * format_size(self.output_settings.output_fmt)
+            + (self.output_settings.columns);
         let padding = expected_length - bytes_written;
         for i in 0..padding {
             write!(f, " ")?;
@@ -203,28 +204,34 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
 }
 
 // try static dispatch by changing params -> accept gernic with trait bounds e.g. into_iter
-pub fn dump_iterator<I>(sequence: I,
-                        writer: &mut Write,
-                        output_settings: OutputSettings)
-                        -> Result<()>
-    where I: Iterator<Item = u8>
+pub fn dump_iterator<I>(
+    sequence: I,
+    writer: &mut Write,
+    output_settings: OutputSettings,
+) -> Result<()>
+where
+    I: Iterator<Item = u8>,
 {
     let mut data: Vec<u8> = Vec::new();
     let mut address = 0;
     for byte in sequence {
         data.push(byte);
         if data.len() == output_settings.bytes_per_line() {
-            dump_line(data.as_slice(),
-                      writer,
-                      output_settings.start_address(address));
+            dump_line(
+                data.as_slice(),
+                writer,
+                output_settings.start_address(address),
+            );
             address += data.len();
             data.clear();
         }
     }
     if data.len() > 0 {
-        dump_line(data.as_slice(),
-                  writer,
-                  output_settings.start_address(address));
+        dump_line(
+            data.as_slice(),
+            writer,
+            output_settings.start_address(address),
+        );
         address += data.len();
         data.clear();
     }
@@ -235,7 +242,6 @@ fn dump_line(data: &[u8], writer: &mut Write, output_settings: OutputSettings) {
     let output_line = OutputLine::new(data).format(output_settings);
     writer.write_fmt(format_args!("{}\n", output_line));
 }
-
 
 mod test {
 
@@ -272,7 +278,7 @@ mod test {
 
     #[test]
     fn output_settings_builder() {
-        let format = OutputFormat::Binary;
+        let format = Format::Binary;
         let start_address = 0xFF00AABB;
         let group_size = 2;
         let show_address = false;
@@ -297,44 +303,51 @@ mod test {
         {
             let group_size = 8;
             let columns = 2;
-            let mut output_settings = OutputSettings::new().columns(columns).group_size(group_size);
+            let mut output_settings = OutputSettings::new()
+                .columns(columns)
+                .group_size(group_size);
             assert_eq!(group_size * columns, output_settings.bytes_per_line())
         }
         {
             let group_size = 5;
             let columns = 4;
-            let mut output_settings = OutputSettings::new().columns(columns).group_size(group_size);
+            let mut output_settings = OutputSettings::new()
+                .columns(columns)
+                .group_size(group_size);
             assert_eq!(group_size * columns, output_settings.bytes_per_line())
         }
         {
             let group_size = 9;
             let columns = 4;
-            let mut output_settings = OutputSettings::new().columns(columns).group_size(group_size);
+            let mut output_settings = OutputSettings::new()
+                .columns(columns)
+                .group_size(group_size);
             assert_eq!(group_size * columns, output_settings.bytes_per_line())
         }
     }
 
     #[test]
     fn output_settings_from_string() {
-        assert_eq!(OutputFormat::Binary, OutputFormat::from("bin".to_string()));
-        assert_eq!(OutputFormat::HexUpperCase,
-                   OutputFormat::from("Hex".to_string()));
-        assert_eq!(OutputFormat::Hex, OutputFormat::from("hex".to_string()));
-        assert_eq!(OutputFormat::Octal, OutputFormat::from("oct".to_string()));
-        assert_eq!(OutputFormat::Decimal, OutputFormat::from("dec".to_string()));
+        assert_eq!(Format::Binary, Format::from("bin".to_string()));
+        assert_eq!(Format::HexUpperCase, Format::from("Hex".to_string()));
+        assert_eq!(Format::Hex, Format::from("hex".to_string()));
+        assert_eq!(Format::Octal, Format::from("oct".to_string()));
+        assert_eq!(Format::Decimal, Format::from("dec".to_string()));
     }
 
     #[test]
     #[should_panic]
     fn output_settings_from_panics_on_uppercase() {
-        assert_eq!(OutputFormat::Decimal, OutputFormat::from("DEC".to_string()));
+        assert_eq!(Format::Decimal, Format::from("DEC".to_string()));
     }
 
     #[test]
     #[should_panic]
     fn output_settings_from_panics_on_unknown_string() {
-        assert_eq!(OutputFormat::Decimal,
-                   OutputFormat::from("SomeRandomString".to_string()));
+        assert_eq!(
+            Format::Decimal,
+            Format::from("SomeRandomString".to_string())
+        );
     }
 
     #[test]
@@ -369,7 +382,7 @@ mod test {
     #[test]
     fn octal_output_format_on_a_single_line() {
         let fixture = TestFixture::new();
-        let output_settings = OutputSettings::new().format(OutputFormat::Octal);
+        let output_settings = OutputSettings::new().format(Format::Octal);
         let output_line = OutputLine::new(fixture.data()).format(output_settings);
         let expected_output = "00000000: 000 377 177 200 070 101 001 041  ....8A.!";
         let mut buffer = String::new();
@@ -381,7 +394,7 @@ mod test {
     #[test]
     fn octal_output_format_for_a_single_line_with_padding() {
         let fixture = TestFixture::new();
-        let output_settings = OutputSettings::new().format(OutputFormat::Octal);
+        let output_settings = OutputSettings::new().format(Format::Octal);
         let output_line = OutputLine::new(fixture.small_data()).format(output_settings);
         let expected_output = "00000000: 000 377 120 054 007              ..P,.";
         let mut buffer = String::new();
@@ -393,7 +406,7 @@ mod test {
     #[test]
     fn binary_output_format_on_a_single_line() {
         let fixture = TestFixture::new();
-        let output_settings = OutputSettings::new().format(OutputFormat::Binary);
+        let output_settings = OutputSettings::new().format(Format::Binary);
         let output_line = OutputLine::new(fixture.data()).format(output_settings);
         let expected_output = "00000000: 00000000 11111111 01111111 10000000 00111000 01000001 00000001 00100001  ....8A.!";
         let mut buffer = String::new();
@@ -405,7 +418,7 @@ mod test {
     #[test]
     fn binary_output_format_for_a_single_line_with_padding() {
         let fixture = TestFixture::new();
-        let output_settings = OutputSettings::new().format(OutputFormat::Binary);
+        let output_settings = OutputSettings::new().format(Format::Binary);
         let output_line = OutputLine::new(fixture.small_data()).format(output_settings);
         let expected_output = "00000000: 00000000 11111111 01010000 00101100 00000111                             ..P,.";
         let mut buffer = String::new();
@@ -419,7 +432,7 @@ mod test {
         // set up
         let fixture = TestFixture::new();
         let expected_output = "00000000: 00 FF 50 2C 07           ..P,.\n";
-        let output_settings = OutputSettings::new().format(OutputFormat::HexUpperCase);
+        let output_settings = OutputSettings::new().format(Format::HexUpperCase);
         let mut buffer: Vec<u8> = Vec::new();
 
         // run test scenario
@@ -435,7 +448,7 @@ mod test {
         let v: Vec<u8> = vec![0, 255, 80, 44, 7];
         let small_data = v.into_iter();
         let expected_output = "00000000: 00 FF 50 2C 07           ..P,.\n";
-        let output_settings = OutputSettings::new().format(OutputFormat::HexUpperCase);
+        let output_settings = OutputSettings::new().format(Format::HexUpperCase);
         let mut buffer: Vec<u8> = Vec::new();
 
         // run test scenario
