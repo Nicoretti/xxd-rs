@@ -89,7 +89,7 @@ impl Render for Template {
     fn render(&self, data: &[u8]) -> String {
         let mut output = String::new();
         if data.len() <= 16 {
-            output = output + &self.prefix + &" ";
+            output = output + &self.prefix + " ";
             for element in data.iter().enumerate() {
                 let (index, byte) = element;
                 if data.len() - 1 == index {
@@ -97,30 +97,28 @@ impl Render for Template {
                 } else {
                     output = output + &format!("0x{:02X}{} ", byte, self.separator);
                     if (index + 1) % self.bytes_per_line == 0 {
-                        output = output + &"\n";
+                        output += "\n";
                     }
                 }
             }
-            output = output + &" " + &self.suffix;
+            output = output + " " + &self.suffix;
         } else {
-            output = output + &self.prefix + &"\n";
+            output = output + &self.prefix + "\n";
             for element in data.iter().enumerate() {
                 let (index, byte) = element;
                 if (index + 1) % self.bytes_per_line == 1 {
-                    output = output + &"    ";
+                    output += "    ";
                 }
                 if data.len() - 1 == index {
                     output = output + &format!("0x{:02X}", byte);
+                } else if (index + 1) % self.bytes_per_line == 0 {
+                    output = output + &format!("0x{:02X}{}", byte, self.separator);
+                    output += "\n";
                 } else {
-                    if (index + 1) % self.bytes_per_line == 0 {
-                        output = output + &format!("0x{:02X}{}", byte, self.separator);
-                        output = output + &"\n";
-                    } else {
-                        output = output + &format!("0x{:02X}{} ", byte, self.separator);
-                    }
+                    output = output + &format!("0x{:02X}{} ", byte, self.separator);
                 }
             }
-            output = output + &"\n" + &self.suffix;
+            output = output + "\n" + &self.suffix;
         }
         output
     }
