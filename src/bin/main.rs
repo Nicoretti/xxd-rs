@@ -59,7 +59,7 @@ pub fn create_writer(path: String) -> Result<Box<std::io::Write>, failure::Error
 }
 
 fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
-    let args = args.ok_or(format_err!("No arguments available"))?;
+    let args = args.ok_or_else(|| format_err!("No arguments available"))?;
     let output_file = args.value_of("outfile").unwrap_or("stdout");
     let input_file = args.value_of("file").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
@@ -105,7 +105,7 @@ fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config, failure::Er
 }
 
 fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
-    let args = args.ok_or(format_err!("No arguments available"))?;
+    let args = args.ok_or_else(|| format_err!("No arguments available"))?;
     let output_file = args.value_of("outfile").unwrap_or("stdout");
     let input_file = args.value_of("file").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
@@ -127,14 +127,16 @@ fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
             .flat_map(|result| result)
             .collect(),
     };
-    writer.write_fmt(format_args!("{}\n", template.render(&data)));
+    writer
+        .write_fmt(format_args!("{}\n", template.render(&data)))
+        .unwrap();
     Ok(())
 }
 
-fn command_not_supported() -> Result<(), failure::Error> {
-    bail!(format_err!("Command not supported yet!"))
-}
+// fn command_not_supported() -> Result<(), failure::Error> {
+//     bail!(format_err!("Command not supported yet!"))
+// }
 
 fn report_error<T: Display>(error: &T) {
-    std::io::stderr().write_fmt(format_args!("xxd-rs: {}\n", error));
+    eprintln!("xxd-rs: {}", error);
 }

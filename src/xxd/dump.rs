@@ -37,6 +37,12 @@ pub struct Config {
     output_fmt: Format,
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Config {
     pub fn new() -> Config {
         Config {
@@ -101,7 +107,7 @@ impl<'a> OutputLine<'a> {
     pub fn new(data: &[u8]) -> OutputLine {
         OutputLine {
             output_settings: Config::new(),
-            data: data,
+            data,
         }
     }
 
@@ -118,17 +124,15 @@ impl<'a> OutputLine<'a> {
     }
 
     fn write_bytes(&self, f: &mut ::fmt::Formatter) -> Result<usize, failure::Error> {
-        let mut byte_count = 0;
         let mut bytes_written = 0;
-        for b in self.data.iter() {
-            byte_count += 1;
-            let is_seperator_necessary = byte_count % self.output_settings.group_size == 0;
+        for (byte_offset, b) in self.data.iter().enumerate() {
+            let is_seperator_necessary = (byte_offset + 1) % self.output_settings.group_size == 0;
             if is_seperator_necessary && self.output_settings.use_separator {
-                bytes_written += self.write_formated_byte(f, b)?;
+                bytes_written += self.write_formated_byte(f, *b)?;
                 write!(f, " ")?;
                 bytes_written += 1;
             } else {
-                bytes_written += self.write_formated_byte(f, b)?;
+                bytes_written += self.write_formated_byte(f, *b)?;
             }
         }
         Ok(bytes_written)
@@ -137,7 +141,7 @@ impl<'a> OutputLine<'a> {
     fn write_formated_byte(
         &self,
         f: &mut ::fmt::Formatter,
-        byte: &u8,
+        byte: u8,
     ) -> Result<usize, failure::Error> {
         match self.output_settings.output_fmt {
             Format::HexUpperCase => {
@@ -168,7 +172,7 @@ impl<'a> OutputLine<'a> {
         for b in self.data.iter() {
             match *b {
                 character @ 20u8...126u8 => write!(f, "{}", character as char)?,
-                _ => write!(f, "{}", ".")?,
+                _ => write!(f, ".")?,
             }
         }
         Ok(self.data.len())
@@ -185,7 +189,7 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
             Format::Binary => 8,
         };
         if self.output_settings.show_address {
-            self.write_address(f);
+            self.write_address(f).unwrap();
         }
         let bytes_written = self.write_bytes(f).map_err(|_| ::std::fmt::Error)?;
         let expected_length = self.output_settings.columns
@@ -197,7 +201,7 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
             write!(f, " ")?;
         }
         if self.output_settings.show_interpretation {
-            self.write_interpretation(f);
+            self.write_interpretation(f).unwrap();
         }
         Ok(())
     }
@@ -226,7 +230,7 @@ where
             data.clear();
         }
     }
-    if data.len() > 0 {
+    if !data.is_empty() {
         dump_line(
             data.as_slice(),
             writer,
@@ -239,7 +243,7 @@ where
 
 fn dump_line(data: &[u8], writer: &mut Write, output_settings: Config) {
     let output_line = OutputLine::new(data).format(output_settings);
-    writer.write_fmt(format_args!("{}\n", output_line));
+    writer.write_fmt(format_args!("{}\n", output_line)).unwrap();
 }
 
 #[cfg(test)]
@@ -446,7 +450,7 @@ mod test {
         let mut buffer: Vec<u8> = Vec::new();
 
         // run test scenario
-        super::dump_iterator(small_data, &mut buffer, output_settings);
+        super::dump_iterator(small_data, &mut buffer, output_settings).unwrap();
 
         // assert expectations
         assert_eq!(expected_output.as_bytes(), buffer.as_slice());
