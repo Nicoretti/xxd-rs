@@ -82,8 +82,7 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
             &mut *writer,
             settings,
         ),
-    };
-    Ok(())
+    }
 }
 
 fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config, failure::Error> {
