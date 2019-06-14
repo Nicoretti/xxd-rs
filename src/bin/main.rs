@@ -132,10 +132,6 @@ fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
     Ok(())
 }
 
-// fn command_not_supported() -> Result<(), failure::Error> {
-//     bail!(format_err!("Command not supported yet!"))
-// }
-
 fn report_error<T: Display>(error: &T) {
     eprintln!("xxd-rs: {}", error);
 }
