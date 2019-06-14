@@ -189,7 +189,10 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
             Format::Binary => 8,
         };
         if self.output_settings.show_address {
-            self.write_address(f).unwrap();
+            match self.write_address(f) {
+                Ok(_) => {}
+                Err(_) => return Err(std::fmt::Error),
+            }
         }
         let bytes_written = self.write_bytes(f).map_err(|_| ::std::fmt::Error)?;
         let expected_length = self.output_settings.columns
@@ -201,7 +204,10 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
             write!(f, " ")?;
         }
         if self.output_settings.show_interpretation {
-            self.write_interpretation(f).unwrap();
+            match self.write_interpretation(f) {
+                Ok(_) => {}
+                Err(_) => return Err(std::fmt::Error),
+            }
         }
         Ok(())
     }
@@ -242,6 +248,9 @@ where
 }
 
 fn dump_line(data: &[u8], writer: &mut Write, output_settings: Config) {
+    // TODO: handle error properly in stead of using `unwrap()`. The
+    // error should propagate with `?` and the calling function should
+    // handle it.
     let output_line = OutputLine::new(data).format(output_settings);
     writer.write_fmt(format_args!("{}\n", output_line)).unwrap();
 }

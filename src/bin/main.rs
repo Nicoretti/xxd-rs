@@ -126,9 +126,7 @@ fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
             .flat_map(|result| result)
             .collect(),
     };
-    writer
-        .write_fmt(format_args!("{}\n", template.render(&data)))
-        .unwrap();
+    writer.write_fmt(format_args!("{}\n", template.render(&data)))?;
     Ok(())
 }
 
