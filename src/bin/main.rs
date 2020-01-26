@@ -88,11 +88,13 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
 fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config, failure::Error> {
     let columns = usize::from_str_radix(args.value_of("columns").unwrap_or("8"), 10)?;
     let format = args.value_of("format").unwrap_or("hex");
+    let address = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
     let group_size = usize::from_str_radix(args.value_of("group-size").unwrap_or("2"), 10)?;
     let settings = Config::new()
         .format(Format::from(format.to_string()))
         .group_size(group_size)
-        .columns(columns);
+        .columns(columns)
+        .set_address(address);
     if args.is_present("plain_hexdump") {
         Ok(settings
             .separator(false)

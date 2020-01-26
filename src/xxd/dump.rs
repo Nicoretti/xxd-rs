@@ -60,7 +60,11 @@ impl Config {
         self.columns * self.group_size
     }
 
-    pub fn start_address(mut self, address: usize) -> Self {
+    pub fn start_address(&self) -> usize {
+        self.start_address
+    }
+
+    pub fn set_address(mut self, address: usize) -> Self {
         self.start_address = address;
         self
     }
@@ -223,16 +227,16 @@ where
     I: Iterator<Item = u8>,
 {
     let mut data: Vec<u8> = Vec::new();
-    let mut address = 0;
+    let mut offset: usize = 0;
     for byte in sequence {
         data.push(byte);
         if data.len() == output_settings.bytes_per_line() {
             dump_line(
                 data.as_slice(),
                 writer,
-                output_settings.start_address(address),
+                output_settings.set_address(output_settings.start_address() + offset),
             );
-            address += data.len();
+            offset += data.len();
             data.clear();
         }
     }
@@ -240,7 +244,7 @@ where
         dump_line(
             data.as_slice(),
             writer,
-            output_settings.start_address(address),
+            output_settings.set_address(output_settings.start_address() + offset),
         );
         data.clear();
     }
@@ -299,7 +303,7 @@ mod test {
 
         let output_settings = Config::new()
             .format(format)
-            .start_address(start_address)
+            .set_address(start_address)
             .group_size(group_size)
             .show_address(show_address)
             .show_interpretation(show_interpretation);
@@ -456,6 +460,22 @@ mod test {
         let small_data = v.into_iter();
         let expected_output = "00000000: 00 FF 50 2C 07           ..P,.\n";
         let output_settings = Config::new().format(Format::HexUpperCase);
+        let mut buffer: Vec<u8> = Vec::new();
+
+        // run test scenario
+        super::dump_iterator(small_data, &mut buffer, output_settings).unwrap();
+
+        // assert expectations
+        assert_eq!(expected_output.as_bytes(), buffer.as_slice());
+    }
+
+    #[test]
+    fn dump_iterator_with_offset() {
+        // set up
+        let v: Vec<u8> = vec![0, 255, 80, 44, 7];
+        let small_data = v.into_iter();
+        let expected_output = "0000000A: 00 FF 50 2C 07           ..P,.\n";
+        let output_settings = Config::new().format(Format::HexUpperCase).set_address(10);
         let mut buffer: Vec<u8> = Vec::new();
 
         // run test scenario
