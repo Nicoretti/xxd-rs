@@ -1,8 +1,6 @@
-#[macro_use]
-extern crate human_panic;
-#[macro_use]
-extern crate clap;
-extern crate xxd;
+use clap;
+use human_panic;
+use xxd;
 
 use anyhow;
 use anyhow::Context;
@@ -20,7 +18,7 @@ use std::process::exit;
 mod cli;
 
 fn main() {
-    setup_panic!();
+    human_panic::setup_panic!();
     let matches = create_arg_parser().get_matches();
     match run(&matches) {
         Ok(_) => exit(0),

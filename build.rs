@@ -1,7 +1,4 @@
-#[macro_use]
-extern crate clap;
-
-use clap::Shell;
+use clap;
 use std::env;
 
 include!("src/bin/cli.rs");
@@ -12,5 +9,5 @@ fn main() {
         Some(outdir) => outdir,
     };
     let mut app = create_arg_parser();
-    app.gen_completions("xxd-rs", Shell::Zsh, outdir);
+    app.gen_completions("xxd-rs", clap::Shell::Zsh, outdir);
 }

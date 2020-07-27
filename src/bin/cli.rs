@@ -1,4 +1,4 @@
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{crate_authors, crate_description, crate_version, App, AppSettings, Arg, SubCommand};
 
 pub fn create_arg_parser<'a, 'b>() -> App<'a, 'b> {
     App::new("A rust based clone of the all time classic xxd tool")

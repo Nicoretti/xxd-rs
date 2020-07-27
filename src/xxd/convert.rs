@@ -1,6 +1,9 @@
+use nom::{
+    call, do_parse, error_position, flat_map, many0, map_res, named, sep, take, take_until,
+    take_until_and_consume, wrap_sep, ws,
+};
 use std::num::ParseIntError;
 use std::str;
-use std::str::FromStr;
 
 fn hex_string_to_u8(s: &str) -> Result<u8, ParseIntError> {
     u8::from_str_radix(s, 16)
@@ -10,7 +13,7 @@ named!(address<&str, u64>,
     do_parse!(
         adr : map_res!(
                 take_until!(":"),
-                FromStr::from_str
+                str::FromStr::from_str
             ) >>
         take!(1) >>
         (adr)
