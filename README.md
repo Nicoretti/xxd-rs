@@ -52,22 +52,22 @@ SUBCOMMANDS:
 ## Examples
 1. Dump file
 ```
-user@host:~$ xxd-rs dump -i file.txt
+user@host:~$ xxd-rs dump file.txt
 ```
 
 2. Dump file with 16 bit word size
 ```
-user@host:~$ xxd-rs generate -g 2 -i file.txt
+user@host:~$ xxd-rs generate -g 2 file.txt
 ```
 
 3. Dump 1024 bytes of file file starting at offset 128
 ```
-user@host:~$ xxd-rs dump -s 128 -l 1024 -i file.txt
+user@host:~$ xxd-rs dump -s 128 -l 1024 file.txt
 ```
 
 4. Generate cpp header file containing file in an cpp array
 ```
-user@host:~$ xxd-rs generate -t cpp -i file.txt
+user@host:~$ xxd-rs generate -t cpp file.txt
 ```
 
 ## Migration/Compatibility
@@ -84,11 +84,11 @@ Be aware that the output formats (especially the default) of hexdump, xxd, od, a
     ```
     3. hexdump
     ```
-    user@host:~$ xxd-rs dump -i file
+    user@host:~$ xxd-rs dump file
     ```
     4. xxd-rs
     ```
-    user@host:~$ xxd-rs dump -i file
+    user@host:~$ xxd-rs dump file
     ```
 
 ## Screenshots
