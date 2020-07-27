@@ -1,5 +1,6 @@
 //! The dump module contains code related for outputing/dumping data.
 use std::convert::From;
+use std::fmt;
 use std::io::Write;
 use std::iter::Iterator;
 
@@ -122,12 +123,12 @@ impl<'a> OutputLine<'a> {
         }
     }
 
-    fn write_address(&self, f: &mut ::fmt::Formatter) -> Result<usize, failure::Error> {
+    fn write_address(&self, f: &mut fmt::Formatter) -> Result<usize, failure::Error> {
         write!(f, "{:08.X}: ", self.output_settings.start_address)?;
         Ok(10)
     }
 
-    fn write_bytes(&self, f: &mut ::fmt::Formatter) -> Result<usize, failure::Error> {
+    fn write_bytes(&self, f: &mut fmt::Formatter) -> Result<usize, failure::Error> {
         let mut bytes_written = 0;
         for (byte_offset, b) in self.data.iter().enumerate() {
             let is_seperator_necessary = (byte_offset + 1) % self.output_settings.group_size == 0;
@@ -144,7 +145,7 @@ impl<'a> OutputLine<'a> {
 
     fn write_formated_byte(
         &self,
-        f: &mut ::fmt::Formatter,
+        f: &mut fmt::Formatter,
         byte: u8,
     ) -> Result<usize, failure::Error> {
         match self.output_settings.output_fmt {
@@ -171,11 +172,11 @@ impl<'a> OutputLine<'a> {
         }
     }
 
-    fn write_interpretation(&self, f: &mut ::fmt::Formatter) -> Result<usize, failure::Error> {
+    fn write_interpretation(&self, f: &mut fmt::Formatter) -> Result<usize, failure::Error> {
         write!(f, " ")?;
         for b in self.data.iter() {
             match *b {
-                character @ 20u8...126u8 => write!(f, "{}", character as char)?,
+                character @ 20u8..=126u8 => write!(f, "{}", character as char)?,
                 _ => write!(f, ".")?,
             }
         }
@@ -183,8 +184,8 @@ impl<'a> OutputLine<'a> {
     }
 }
 
-impl<'a> ::fmt::Display for OutputLine<'a> {
-    fn fmt(&self, f: &mut ::fmt::Formatter) -> ::std::fmt::Result {
+impl<'a> fmt::Display for OutputLine<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let format_size = |fmt: Format| match fmt {
             Format::HexUpperCase => 2,
             Format::Hex => 2,
@@ -220,7 +221,7 @@ impl<'a> ::fmt::Display for OutputLine<'a> {
 // try static dispatch by changing params -> accept gernic with trait bounds e.g. into_iter
 pub fn dump_iterator<I>(
     sequence: I,
-    writer: &mut Write,
+    writer: &mut dyn Write,
     output_settings: Config,
 ) -> Result<(), failure::Error>
 where
@@ -251,7 +252,7 @@ where
     Ok(())
 }
 
-fn dump_line(data: &[u8], writer: &mut Write, output_settings: Config) {
+fn dump_line(data: &[u8], writer: &mut dyn Write, output_settings: Config) {
     // TODO: handle error properly in stead of using `unwrap()`. The
     // error should propagate with `?` and the calling function should
     // handle it.

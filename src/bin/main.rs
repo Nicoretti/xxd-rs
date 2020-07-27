@@ -13,6 +13,7 @@ use xxd::generate::{Render, Template};
 use clap::ArgMatches;
 
 use std::fmt::Display;
+use std::io;
 use std::io::{Read, Write};
 use std::process::exit;
 
@@ -38,7 +39,7 @@ fn run(args: &ArgMatches) -> Result<(), failure::Error> {
     }
 }
 
-pub fn create_reader(path: String) -> Result<Box<std::io::Read>, failure::Error> {
+pub fn create_reader(path: String) -> Result<Box<dyn io::Read>, failure::Error> {
     match path.as_ref() {
         "stdin" => Ok(Box::new(std::io::stdin())),
         _ => {
@@ -48,11 +49,11 @@ pub fn create_reader(path: String) -> Result<Box<std::io::Read>, failure::Error>
     }
 }
 
-pub fn create_writer(path: String) -> Result<Box<std::io::Write>, failure::Error> {
+pub fn create_writer(path: String) -> Result<Box<dyn io::Write>, failure::Error> {
     match path.as_ref() {
         "stdout" => Ok(Box::new(std::io::stdout())),
         _ => {
-            let mut file_writer = std::fs::File::create(path)?;
+            let file_writer = std::fs::File::create(path)?;
             Ok(Box::new(file_writer))
         }
     }
