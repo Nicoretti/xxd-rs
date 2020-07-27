@@ -42,7 +42,7 @@ named!(hexdum_line<&str, Line>,
         adr: address >>
         data: flat_map!(take_until_and_consume!("  "), bytes) >>
         take_until_and_consume!("\n") >>
-        (Line { address: adr, data: data } )
+        (Line { address: adr, data } )
     )
 );
 

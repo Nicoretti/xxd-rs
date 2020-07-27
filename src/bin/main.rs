@@ -1,8 +1,3 @@
-use clap;
-use human_panic;
-use xxd;
-
-use anyhow;
 use anyhow::Context;
 use cli::create_arg_parser;
 use xxd::dump::{dump_iterator, Config, Format};
@@ -33,7 +28,7 @@ fn run(args: &ArgMatches) -> Result<(), anyhow::Error> {
     match args.subcommand_name() {
         Some("dump") => dump(args.subcommand_matches("dump")),
         Some("generate") => generate(args.subcommand_matches("generate")),
-        _ => Err(anyhow::anyhow!(format!("{}", args.usage()))),
+        _ => Err(anyhow::anyhow!(args.usage().to_string())),
     }
 }
 
@@ -58,7 +53,7 @@ pub fn create_writer(path: String) -> Result<Box<dyn io::Write>, anyhow::Error> 
 }
 
 fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), anyhow::Error> {
-    let args = args.with_context(|| format!("No arguments available"))?;
+    let args = args.context("No arguments available")?;
     let output_file = args.value_of("outfile").unwrap_or("stdout");
     let input_file = args.value_of("file").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
@@ -67,17 +62,13 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), anyhow::Error> {
     let reader = create_reader(input_file.to_string())?;
     let mut writer = create_writer(output_file.to_string())?;
     match length {
-        None => dump_iterator(
-            reader.bytes().skip(seek).flat_map(|result| result),
-            &mut *writer,
-            settings,
-        ),
+        None => dump_iterator(reader.bytes().skip(seek).flatten(), &mut *writer, settings),
         Some(n) => dump_iterator(
             reader
                 .bytes()
                 .skip(seek)
                 .take(usize::from_str_radix(n, 10)?)
-                .flat_map(|result| result),
+                .flatten(),
             &mut *writer,
             settings,
         ),
@@ -105,7 +96,7 @@ fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config, anyhow::Err
 }
 
 fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), anyhow::Error> {
-    let args = args.with_context(|| format!("No arguments available"))?;
+    let args = args.context("No arguments available")?;
     let output_file = args.value_of("outfile").unwrap_or("stdout");
     let input_file = args.value_of("file").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
@@ -115,16 +106,12 @@ fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), anyhow::Error> {
     let lang = xxd::generate::Language::from(args.value_of("template").unwrap_or("c"));
     let template = Template::new(lang);
     let data: Vec<u8> = match length {
-        None => reader
-            .bytes()
-            .skip(seek)
-            .flat_map(|result| result)
-            .collect(),
+        None => reader.bytes().skip(seek).flatten().collect(),
         Some(n) => reader
             .bytes()
             .skip(seek)
             .take(usize::from_str_radix(n, 10)?)
-            .flat_map(|result| result)
+            .flatten()
             .collect(),
     };
     writer.write_fmt(format_args!("{}\n", template.render(&data)))?;

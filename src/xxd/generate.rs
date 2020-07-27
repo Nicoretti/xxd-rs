@@ -1,20 +1,20 @@
 use std::convert::From;
 
-static C_PRE: &'static str = "const char data[] = {";
-static C_SEPERATOR: &'static str = ",";
-static C_POST: &'static str = "};";
+static C_PRE: &str = "const char data[] = {";
+static C_SEPERATOR: &str = ",";
+static C_POST: &str = "};";
 
-static CPP_PRE: &'static str = "const char data[] = {";
-static CPP_SEPERATOR: &'static str = ",";
-static CPP_POST: &'static str = "};";
+static CPP_PRE: &str = "const char data[] = {";
+static CPP_SEPERATOR: &str = ",";
+static CPP_POST: &str = "};";
 
-static PYTHON_PRE: &'static str = "data = [";
-static PYTHON_SEPERATOR: &'static str = ",";
-static PYTHON_POST: &'static str = "]";
+static PYTHON_PRE: &str = "data = [";
+static PYTHON_SEPERATOR: &str = ",";
+static PYTHON_POST: &str = "]";
 
-static RUST_PRE: &'static str = "let data = [";
-static RUST_SEPERATOR: &'static str = ",";
-static RUST_POST: &'static str = "];";
+static RUST_PRE: &str = "let data = [";
+static RUST_SEPERATOR: &str = ",";
+static RUST_POST: &str = "];";
 
 pub trait Render {
     fn render(&self, data: &[u8]) -> String;

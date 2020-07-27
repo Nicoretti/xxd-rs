@@ -1,6 +1,4 @@
 //! The dump module contains code related for outputing/dumping data.
-use anyhow;
-use std::convert::From;
 use std::fmt;
 use std::io::Write;
 use std::iter::Iterator;
