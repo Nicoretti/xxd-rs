@@ -2,11 +2,11 @@
 extern crate human_panic;
 #[macro_use]
 extern crate clap;
-extern crate failure;
 extern crate xxd;
 
+use anyhow;
+use anyhow::Context;
 use cli::create_arg_parser;
-use failure::*;
 use xxd::dump::{dump_iterator, Config, Format};
 use xxd::generate::{Render, Template};
 
@@ -31,15 +31,15 @@ fn main() {
     }
 }
 
-fn run(args: &ArgMatches) -> Result<(), failure::Error> {
+fn run(args: &ArgMatches) -> Result<(), anyhow::Error> {
     match args.subcommand_name() {
         Some("dump") => dump(args.subcommand_matches("dump")),
         Some("generate") => generate(args.subcommand_matches("generate")),
-        _ => bail!(format_err!("{}", args.usage())),
+        _ => Err(anyhow::anyhow!(format!("{}", args.usage()))),
     }
 }
 
-pub fn create_reader(path: String) -> Result<Box<dyn io::Read>, failure::Error> {
+pub fn create_reader(path: String) -> Result<Box<dyn io::Read>, anyhow::Error> {
     match path.as_ref() {
         "stdin" => Ok(Box::new(std::io::stdin())),
         _ => {
@@ -49,7 +49,7 @@ pub fn create_reader(path: String) -> Result<Box<dyn io::Read>, failure::Error> 
     }
 }
 
-pub fn create_writer(path: String) -> Result<Box<dyn io::Write>, failure::Error> {
+pub fn create_writer(path: String) -> Result<Box<dyn io::Write>, anyhow::Error> {
     match path.as_ref() {
         "stdout" => Ok(Box::new(std::io::stdout())),
         _ => {
@@ -59,8 +59,8 @@ pub fn create_writer(path: String) -> Result<Box<dyn io::Write>, failure::Error>
     }
 }
 
-fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
-    let args = args.ok_or_else(|| format_err!("No arguments available"))?;
+fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), anyhow::Error> {
+    let args = args.with_context(|| format!("No arguments available"))?;
     let output_file = args.value_of("outfile").unwrap_or("stdout");
     let input_file = args.value_of("file").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
@@ -86,7 +86,7 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
     }
 }
 
-fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config, failure::Error> {
+fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config, anyhow::Error> {
     let columns = usize::from_str_radix(args.value_of("columns").unwrap_or("8"), 10)?;
     let format = args.value_of("format").unwrap_or("hex");
     let address = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
@@ -106,8 +106,8 @@ fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config, failure::Er
     }
 }
 
-fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), failure::Error> {
-    let args = args.ok_or_else(|| format_err!("No arguments available"))?;
+fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), anyhow::Error> {
+    let args = args.with_context(|| format!("No arguments available"))?;
     let output_file = args.value_of("outfile").unwrap_or("stdout");
     let input_file = args.value_of("file").unwrap_or("stdin");
     let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;

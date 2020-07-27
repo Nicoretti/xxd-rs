@@ -1,4 +1,5 @@
 //! The dump module contains code related for outputing/dumping data.
+use anyhow;
 use std::convert::From;
 use std::fmt;
 use std::io::Write;
@@ -123,12 +124,12 @@ impl<'a> OutputLine<'a> {
         }
     }
 
-    fn write_address(&self, f: &mut fmt::Formatter) -> Result<usize, failure::Error> {
+    fn write_address(&self, f: &mut fmt::Formatter) -> Result<usize, anyhow::Error> {
         write!(f, "{:08.X}: ", self.output_settings.start_address)?;
         Ok(10)
     }
 
-    fn write_bytes(&self, f: &mut fmt::Formatter) -> Result<usize, failure::Error> {
+    fn write_bytes(&self, f: &mut fmt::Formatter) -> Result<usize, anyhow::Error> {
         let mut bytes_written = 0;
         for (byte_offset, b) in self.data.iter().enumerate() {
             let is_seperator_necessary = (byte_offset + 1) % self.output_settings.group_size == 0;
@@ -147,7 +148,7 @@ impl<'a> OutputLine<'a> {
         &self,
         f: &mut fmt::Formatter,
         byte: u8,
-    ) -> Result<usize, failure::Error> {
+    ) -> Result<usize, anyhow::Error> {
         match self.output_settings.output_fmt {
             Format::HexUpperCase => {
                 write!(f, "{:02.X}", byte)?;
@@ -172,7 +173,7 @@ impl<'a> OutputLine<'a> {
         }
     }
 
-    fn write_interpretation(&self, f: &mut fmt::Formatter) -> Result<usize, failure::Error> {
+    fn write_interpretation(&self, f: &mut fmt::Formatter) -> Result<usize, anyhow::Error> {
         write!(f, " ")?;
         for b in self.data.iter() {
             match *b {
@@ -223,7 +224,7 @@ pub fn dump_iterator<I>(
     sequence: I,
     writer: &mut dyn Write,
     output_settings: Config,
-) -> Result<(), failure::Error>
+) -> Result<(), anyhow::Error>
 where
     I: Iterator<Item = u8>,
 {
