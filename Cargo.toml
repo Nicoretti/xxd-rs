@@ -31,5 +31,5 @@ path = "src/bin/main.rs"
 [dependencies]
 nom = "3.0.0"
 clap = "2.16.2"
-human-panic = "1.0.1"
 anyhow = "1.0.32"
+human-panic = "1.0.3"
