@@ -7,11 +7,5 @@ os:
 script:
 - cargo test
 - cargo build --release
-deploy:
-  provider: releases
-  api_key: $GITHUB_TOKEN
-  file: 'target/release/xxd-rs'
-  on:
-    repo: Nicoretti/xxd-rs
-    branch: master
-    tags: true
+- cargo install cargo-audit
+- cargo audit --deny-warnings
