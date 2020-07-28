@@ -9,7 +9,7 @@ script:
 - cargo build --release
 deploy:
   provider: releases
-  github_token: $GITHUB_TOKEN
+  api_key: $GITHUB_TOKEN
   file: 'target/release/xxd-rs'
   on:
     repo: Nicoretti/xxd-rs
