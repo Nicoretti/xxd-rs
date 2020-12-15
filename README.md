@@ -16,10 +16,10 @@ of the goal(s) and non goals so you won't waste ur time or get frustrated.
 3. Strive towards a clean rust code base
     - rustfmt
     - Add/refactor towards common rust idioms
-4. Useability
+4. Usability
     - Provide user friendly defaults
     - Provide clear and well documented command line tools
-5. Continously improve the code base
+5. Continuously improve the code base
 
 
 ### Non Goals
