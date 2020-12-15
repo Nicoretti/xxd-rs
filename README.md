@@ -7,8 +7,8 @@ A rust based reimplementation of [Juergen Weigert's](jnweiger@informatik.uni-erl
 
 ## Mission statement
 This project was created to learn rust, therefore there is no perf
-If you wanna use the proect or contribute feel free, but please take note
-of the goal(s) and non goals so you won't waste ur time or get frustrated.
+If you wanna use the project or contribute feel free, but please take note
+of the goal(s) and non goals so you won't waste your time or get frustrated.
 
 ### Goals
 1. Learn rust
