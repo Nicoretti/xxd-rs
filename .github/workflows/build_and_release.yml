@@ -1,0 +1,62 @@
+name: Build and Release
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      matrix:
+        os: [x86_64-unknown-linux-musl, arm-unknown-linux-musleabihf]
+        runs-on: [ubuntu-latest]
+        cross: [true]
+        include:
+          - os: x86_64-apple-darwin
+            runs-on: macos-latest # Apple needs to be compiled on an apple os
+            cross: false # Cross fails on these platforms
+          - os: x86_64-pc-windows-gnu
+            runs-on: windows-latest # Not needed, but why not?
+            suffix: .exe # Windows has an .exe suffix
+            cross: false # Cross fails on these platforms
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+          target: ${{ matrix.os }}
+
+      - name: Build Binary
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.cross }}
+          command: build
+          args: --target ${{ matrix.os }} --release
+
+      - name: Save Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: xxd-rs-${{ matrix.os }}${{ matrix.suffix }}
+          path: target/${{ matrix.os }}/release/xxd-rs${{ matrix.suffix }}
+
+      - name: Upload Binary
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          asset_name: xxd-rs-${{ matrix.os }}${{ matrix.suffix }}
+          asset_path: target/${{ matrix.os }}/release/xxd-rs${{ matrix.suffix }}
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_content_type: application/octet-stream
