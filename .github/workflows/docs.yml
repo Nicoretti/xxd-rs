@@ -23,11 +23,3 @@ jobs:
 
       - name: Build Documentation
         run: cargo doc --all --no-deps  --target x86_64-unknown-linux-musl
-
-      - name: Deploy Docs
-        uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/master' }}
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./target/x86_64-unknown-linux-musl/doc/
