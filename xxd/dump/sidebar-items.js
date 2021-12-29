@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Format","Enum which provides all possible output value formats supported by the dump module."]],"fn":[["dump_iterator",""]],"struct":[["Config",""],["OutputLine","The `OutputLine` struct contains all  information needed to dump/output a single line of data."]]});

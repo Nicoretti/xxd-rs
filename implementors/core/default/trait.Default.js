@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["xxd"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.57.0/core/default/trait.Default.html\" title=\"trait core::default::Default\">Default</a> for <a class=\"struct\" href=\"xxd/dump/struct.Config.html\" title=\"struct xxd::dump::Config\">Config</a>","synthetic":false,"types":["xxd::dump::Config"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
