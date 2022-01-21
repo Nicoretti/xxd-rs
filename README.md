@@ -22,8 +22,10 @@ of the goal(s) and non goals so you won't waste your time or get frustrated.
 What this Project isn't about
 
 1. Implement the fastest dump utility out there
-    - If you are looking for a performant implementation of xxd
-      checkout [go-xxd](https://github.com/felixge/go-xxd)
+ 
+### Alternatives
+   * [hexyl](https://github.com/sharkdp/hexyl)
+   * [go-xxd](https://github.com/felixge/go-xxd)
 
 ## Usage
 ```
