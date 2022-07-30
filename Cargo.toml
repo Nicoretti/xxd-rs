@@ -7,7 +7,7 @@ authors = ["Nicola Coretti <nico.coretti@gmail.com>"]
 edition = "2018"
 keywords = ["xxd", "hex-dump"]
 license-file = "LICENSE"
-version = "0.2.7"
+version = "0.3.0"
 build = "build.rs"
 autobins = false
 
