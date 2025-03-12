@@ -12,7 +12,7 @@ static PYTHON_PRE: &str = "data = [";
 static PYTHON_SEPERATOR: &str = ",";
 static PYTHON_POST: &str = "]";
 
-static RUST_PRE: &str = "let data = [";
+static RUST_PRE: &str = "pub const DATA: &'static[u8] = &[";
 static RUST_SEPERATOR: &str = ",";
 static RUST_POST: &str = "];";
 
