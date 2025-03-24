@@ -104,7 +104,22 @@ fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), anyhow::Error> {
     let reader = create_reader(input_file.to_string())?;
     let mut writer = create_writer(output_file.to_string())?;
     let lang = xxd::generate::Language::from(args.value_of("template").unwrap_or("c"));
-    let template = Template::new(lang);
+    let mut template = Template::new(lang);
+    if let Some(prefix) = args.value_of("set-prefix") {
+        template.set_prefix(prefix.to_string());
+    }
+    if let Some(suffix) = args.value_of("set-suffix") {
+        template.set_suffix(suffix.to_string());
+    }
+    if let Some(separator) = args.value_of("set-separator") {
+        template.set_separator(separator.to_string());
+    }
+    if let Some(bytes_per_line) = args.value_of("set-bytes") {
+        match bytes_per_line.parse::<usize>() {
+            Ok(bytes_per_line) => template.set_bytes_per_line(bytes_per_line),
+            Err(error) => println!("Using default number of bytes per line, provided arg can't be converted to usize: {}", error),
+        }
+    }
     let data: Vec<u8> = match length {
         None => reader.bytes().skip(seek).flatten().collect(),
         Some(n) => reader
