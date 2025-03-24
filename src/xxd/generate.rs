@@ -83,6 +83,38 @@ impl Template {
             },
         }
     }
+
+    /// Simple function to allow users to set custom prefix
+    ///
+    /// This way, users can customize how they want the generated file to look.
+    /// There is still predefined prefixes
+    pub fn set_prefix(&mut self, prefix: String) {
+        self.prefix = prefix;
+    }
+
+    /// Simple function to allow users to set custom suffix
+    ///
+    /// This way, users can customize how they want the generated file to look.
+    /// There is still predefined suffixes
+    pub fn set_suffix(&mut self, suffix: String) {
+        self.suffix = suffix;
+    }
+
+    /// Simple function to allow users to set custom separator
+    ///
+    /// This way, users can customize how they want the generated file to look.
+    /// There is still predefined separators
+    pub fn set_separator(&mut self, separator: String) {
+        self.separator = separator;
+    }
+
+    /// Simple function to allow users to set custom bytes per line
+    ///
+    /// This way, users can customize how they want the generated file to look.
+    /// There is still predefined number of bytes per line
+    pub fn set_bytes_per_line(&mut self, bytes_per_line: usize) {
+        self.bytes_per_line = bytes_per_line;
+    }
 }
 
 impl Render for Template {
@@ -213,7 +245,8 @@ mod test {
     fn render_basic_rust_template() {
         let data = [0, 1, 2, 3, 4, 5];
         let template = Template::new(Language::Rust);
-        let expected_result = r#"let data = [ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 ];"#;
+        let expected_result =
+            r#"pub const DATA: &'static[u8] = &[ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 ];"#;
         assert_eq!(template.render(&data), expected_result);
     }
 
@@ -224,7 +257,7 @@ mod test {
             24, 25, 26,
         ];
         let template = Template::new(Language::Rust);
-        let expected_result = r#"let data = [
+        let expected_result = r#"pub const DATA: &'static[u8] = &[
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
     0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A
 ];"#;
