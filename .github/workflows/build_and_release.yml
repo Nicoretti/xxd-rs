@@ -27,10 +27,10 @@ jobs:
             cross: false # Cross fails on these platforms
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@main
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@master
         with:
           toolchain: stable
           override: true
@@ -38,21 +38,21 @@ jobs:
           target: ${{ matrix.os }}
 
       - name: Build Binary
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/cargo@master
         with:
           use-cross: ${{ matrix.cross }}
           command: build
           args: --target ${{ matrix.os }} --release
 
       - name: Save Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@main
         with:
           name: xxd-rs-${{ matrix.os }}${{ matrix.suffix }}
           path: target/${{ matrix.os }}/release/xxd-rs${{ matrix.suffix }}
 
       - name: Upload Binary
         if: github.event_name == 'release'
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

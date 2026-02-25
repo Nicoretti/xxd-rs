@@ -23,10 +23,10 @@ jobs:
             cross: false # Cross fails on these platforms
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@main
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@master
         with:
           toolchain: stable
           override: true
@@ -34,7 +34,7 @@ jobs:
           target: ${{ matrix.os }}
 
       - name: Tests
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/cargo@master
         with:
           use-cross: ${{ matrix.cross }}
           command: test
@@ -43,16 +43,16 @@ jobs:
   clippy_check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@main
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@master
         with:
           toolchain: stable
           override: true
           profile: minimal
           components: clippy
           target: x86_64-unknown-linux-musl
-      - uses: actions-rs/clippy-check@v1
+      - uses: actions-rs/clippy-check@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features --target x86_64-unknown-linux-musl
