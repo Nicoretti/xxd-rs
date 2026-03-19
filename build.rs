@@ -1,4 +1,3 @@
-use clap;
 use std::env;
 
 include!("src/bin/cli.rs");

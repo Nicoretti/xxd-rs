@@ -108,7 +108,7 @@ pub struct OutputLine<'a> {
 }
 
 impl<'a> OutputLine<'a> {
-    pub fn new(data: &[u8]) -> OutputLine {
+    pub fn new(data: &[u8]) -> OutputLine<'_> {
         OutputLine {
             output_settings: Config::new(),
             data,
@@ -290,7 +290,6 @@ mod test {
     #[test]
     fn output_settings_can_be_constructed() {
         let _output_settings = Config::new();
-        assert!(true);
     }
 
     #[test]
@@ -365,7 +364,6 @@ mod test {
     fn outputline_can_be_constructed() {
         let fixture = TestFixture::new();
         let _output_line = OutputLine::new(fixture.data());
-        assert!(true);
     }
 
     #[test]
@@ -447,7 +445,7 @@ mod test {
         let mut buffer: Vec<u8> = Vec::new();
 
         // run test scenario
-        super::dump_line(&fixture.small_data(), &mut buffer, output_settings);
+        super::dump_line(fixture.small_data(), &mut buffer, output_settings);
 
         // assert expectations
         assert_eq!(expected_output.as_bytes(), buffer.as_slice());
