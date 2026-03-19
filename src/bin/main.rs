@@ -13,6 +13,7 @@ use std::process::exit;
 mod cli;
 
 fn main() {
+    #[cfg(not(target_env = "musl"))]
     human_panic::setup_panic!();
     let matches = create_arg_parser().get_matches();
     match run(&matches) {
