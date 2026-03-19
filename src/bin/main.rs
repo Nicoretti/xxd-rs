@@ -7,11 +7,13 @@ use clap::ArgMatches;
 
 use std::fmt::Display;
 use std::io;
+use std::io::BufReader;
 use std::io::{Read, Write};
 use std::process::exit;
 
 mod cli;
 
+#[allow(deprecated)]
 fn main() {
     #[cfg(not(target_env = "musl"))]
     human_panic::setup_panic!();
@@ -57,10 +59,11 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), anyhow::Error> {
     let args = args.context("No arguments available")?;
     let output_file = args.value_of("outfile").unwrap_or("stdout");
     let input_file = args.value_of("file").unwrap_or("stdin");
-    let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
+    let seek = args.value_of("seek").unwrap_or("0").parse::<usize>()?;
     let length = args.value_of("length");
     let settings = create_dump_settings(args)?;
     let reader = create_reader(input_file.to_string())?;
+    let reader = BufReader::new(reader);
     let mut writer = create_writer(output_file.to_string())?;
     match length {
         None => dump_iterator(reader.bytes().skip(seek).flatten(), &mut *writer, settings),
@@ -68,7 +71,7 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), anyhow::Error> {
             reader
                 .bytes()
                 .skip(seek)
-                .take(usize::from_str_radix(n, 10)?)
+                .take(n.parse::<usize>()?)
                 .flatten(),
             &mut *writer,
             settings,
@@ -77,10 +80,13 @@ fn dump<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), anyhow::Error> {
 }
 
 fn create_dump_settings<'a>(args: &ArgMatches<'a>) -> Result<Config, anyhow::Error> {
-    let columns = usize::from_str_radix(args.value_of("columns").unwrap_or("8"), 10)?;
+    let columns = args.value_of("columns").unwrap_or("8").parse::<usize>()?;
     let format = args.value_of("format").unwrap_or("hex");
-    let address = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
-    let group_size = usize::from_str_radix(args.value_of("group-size").unwrap_or("2"), 10)?;
+    let address = args.value_of("seek").unwrap_or("0").parse::<usize>()?;
+    let group_size = args
+        .value_of("group-size")
+        .unwrap_or("2")
+        .parse::<usize>()?;
     let settings = Config::new()
         .format(Format::from(format.to_string()))
         .group_size(group_size)
@@ -100,9 +106,10 @@ fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), anyhow::Error> {
     let args = args.context("No arguments available")?;
     let output_file = args.value_of("outfile").unwrap_or("stdout");
     let input_file = args.value_of("file").unwrap_or("stdin");
-    let seek = usize::from_str_radix(args.value_of("seek").unwrap_or("0"), 10)?;
+    let seek = args.value_of("seek").unwrap_or("0").parse::<usize>()?;
     let length = args.value_of("length");
     let reader = create_reader(input_file.to_string())?;
+    let reader = BufReader::new(reader);
     let mut writer = create_writer(output_file.to_string())?;
     let lang = xxd::generate::Language::from(args.value_of("template").unwrap_or("c"));
     let mut template = Template::new(lang);
@@ -126,7 +133,7 @@ fn generate<'a>(args: Option<&ArgMatches<'a>>) -> Result<(), anyhow::Error> {
         Some(n) => reader
             .bytes()
             .skip(seek)
-            .take(usize::from_str_radix(n, 10)?)
+            .take(n.parse::<usize>()?)
             .flatten()
             .collect(),
     };

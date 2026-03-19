@@ -29,7 +29,7 @@ pub enum Language {
     Unknown,
 }
 
-impl<'a> From<&'a str> for Language {
+impl From<&str> for Language {
     fn from(other: &str) -> Language {
         match other.to_lowercase().as_ref() {
             "c" => Language::C,
