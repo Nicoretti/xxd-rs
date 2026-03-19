@@ -31,7 +31,6 @@ named!(pub bytes<&str, Vec<u8> >,
     )
 );
 
-#[allow(dead_code)]
 #[derive(Debug, PartialEq)]
 struct Line {
     address: u64,
